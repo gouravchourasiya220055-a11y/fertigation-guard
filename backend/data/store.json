@@ -1,0 +1,27 @@
+{
+  "telemetry": [
+    {
+      "device_id": "test",
+      "ts": 1783966353047,
+      "ph": 6.18,
+      "ec": 2.31,
+      "mode": "AUTO",
+      "phase": "IDLE",
+      "crop": "Tomato",
+      "water_pump": 0,
+      "base_pump": 0,
+      "fert_pump": 0,
+      "flush_valve": 0
+    }
+  ],
+  "events": [
+    {
+      "id": 1783966367619,
+      "ts": 1783966367619,
+      "type": "crop_selected",
+      "message": "Crop set to Chilli",
+      "severity": "info"
+    }
+  ],
+  "flush_history": []
+}
