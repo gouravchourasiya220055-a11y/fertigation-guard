@@ -1,144 +1,114 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Power, Settings2, ShieldAlert, CheckCircle2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-interface RelayControlProps {
-  name: string;
-  pin: string;
-  initialState?: boolean;
-}
-
-const RelayControl = ({ name, pin, initialState = false }: RelayControlProps) => {
-  const [isOn, setIsOn] = useState(initialState);
-  
-  return (
-    <GlassCard className="p-6 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className={cn("p-3 rounded-full transition-colors", isOn ? "bg-emerald-500/20 text-emerald-500" : "bg-slate-500/20 text-slate-500")}>
-          <Power className="w-6 h-6" />
-        </div>
-        <div>
-          <h4 className="font-semibold text-slate-900 dark:text-white">{name}</h4>
-          <p className="text-sm text-slate-500">Pin: {pin}</p>
-        </div>
-      </div>
-      
-      <button 
-        onClick={() => setIsOn(!isOn)}
-        className={cn(
-          "relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
-          isOn ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
-        )}
-      >
-        <span className={cn(
-          "pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-          isOn ? "translate-x-6" : "translate-x-0"
-        )} />
-      </button>
-    </GlassCard>
-  );
-};
+import { Settings2, Clock, Droplets, Thermometer, Plus, ShieldCheck } from 'lucide-react';
+import { useFarm } from '@/context/FarmContext';
 
 export default function Automation() {
-  const [isAutoMode, setIsAutoMode] = useState(true);
+  const { activeFarm } = useFarm();
+  const [rules, setRules] = useState([
+    { id: 1, name: 'Morning Irrigation', condition: 'Time = 06:00', action: 'Pump ON for 30m', active: true },
+    { id: 2, name: 'High Temp Protection', condition: 'Temp > 35°C', action: 'Sprinklers ON', active: true },
+    { id: 3, name: 'Dry Soil Alert', condition: 'Moisture < 30%', action: 'Send Alert & Valve Open', active: false },
+    { id: 4, name: 'Low pH Correction', condition: 'pH < 5.5', action: 'Dose Tank B', active: true },
+  ]);
+
+  const toggleRule = (id: number) => {
+    setRules(rules.map(r => r.id === id ? { ...r, active: !r.active } : r));
+  };
 
   return (
     <div className="space-y-6">
-      
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Automation Control</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage relays, pumps, and system modes.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <Settings2 className="w-8 h-8 text-primary" />
+            Automation Rules
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Configure logic for {activeFarm.name} ({activeFarm.cropType})</p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors shadow-lg shadow-primary/25">
+          <Plus className="w-5 h-5" />
+          Create Rule
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Rules List */}
+        <div className="lg:col-span-2 space-y-4">
+          {rules.map((rule) => (
+            <GlassCard key={rule.id} className={`p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 ${rule.active ? 'border-primary/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'opacity-75'}`}>
+              <div className="flex items-start sm:items-center gap-4">
+                <div className={`p-3 rounded-xl shrink-0 ${rule.active ? 'bg-primary/20 text-primary' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                  {rule.name.includes('Time') || rule.name.includes('Morning') ? <Clock className="w-6 h-6" /> : 
+                   rule.name.includes('Temp') ? <Thermometer className="w-6 h-6" /> : 
+                   <Droplets className="w-6 h-6" />}
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">{rule.name}</h3>
+                  <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
+                    <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-300 font-mono">IF {rule.condition}</span>
+                    <span className="text-slate-400">→</span>
+                    <span className="px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md font-mono">THEN {rule.action}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center self-end sm:self-auto shrink-0">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={rule.active} onChange={() => toggleRule(rule.id)} />
+                  <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+            </GlassCard>
+          ))}
         </div>
 
-        <GlassCard className="p-2 flex items-center gap-2 border-slate-200 dark:border-slate-800 self-start md:self-auto">
-          <button 
-            onClick={() => setIsAutoMode(true)}
-            className={cn(
-              "px-6 py-2 rounded-lg text-sm font-semibold transition-all",
-              isAutoMode ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-            )}
-          >
-            Auto Mode
-          </button>
-          <button 
-            onClick={() => setIsAutoMode(false)}
-            className={cn(
-              "px-6 py-2 rounded-lg text-sm font-semibold transition-all",
-              !isAutoMode ? "bg-amber-500 text-white shadow-md shadow-amber-500/20" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-            )}
-          >
-            Manual Mode
-          </button>
-        </GlassCard>
-      </div>
-
-      {!isAutoMode && (
-        <motion.div 
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-start gap-3"
-        >
-          <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-amber-600 dark:text-amber-400">Manual Override Active</h4>
-            <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-1">
-              AI recommendations and scheduled dosing are paused. You have full manual control over all relays. Please monitor sensors carefully to avoid plant damage.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {isAutoMode && (
-        <motion.div 
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-start gap-3"
-        >
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-emerald-600 dark:text-emerald-400">AI Control Active</h4>
-            <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80 mt-1">
-              The system is automatically managing relays based on target pH and EC settings for the selected crop.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-        {/* Overlay to disable manual controls if in Auto mode */}
-        {isAutoMode && (
-          <div className="absolute inset-0 z-10 bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-[2px] rounded-2xl flex items-center justify-center">
-             <div className="px-4 py-2 rounded-full bg-slate-900/80 text-white font-medium text-sm flex items-center gap-2">
-               <Settings2 className="w-4 h-4" /> Controls Disabled (Auto Mode)
-             </div>
-          </div>
-        )}
-
-        <RelayControl name="Main Water Pump" pin="Relay 1" initialState={true} />
-        <RelayControl name="Fertilizer A Dosing Pump" pin="Relay 2" initialState={false} />
-        <RelayControl name="Fertilizer B Dosing Pump" pin="Relay 3" initialState={false} />
-        <RelayControl name="pH Down (Acid) Pump" pin="Relay 4" initialState={false} />
-        <RelayControl name="pH Up (Base) Pump" pin="Relay 5" initialState={false} />
-        <RelayControl name="Pipeline Flush Valve" pin="Relay 6" initialState={false} />
-      </div>
-
-      <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-         <GlassCard className="p-6 border-red-500/30 bg-red-500/5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Global Settings */}
+        <div className="space-y-6">
+          <GlassCard className="p-6">
+            <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-4 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-500" />
+              Safety Limits
+            </h3>
+            <div className="space-y-4">
               <div>
-                <h4 className="text-lg font-bold text-red-600 dark:text-red-400">Emergency Stop</h4>
-                <p className="text-sm text-slate-500">Immediately disconnects power to all relays and pumps.</p>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-slate-600 dark:text-slate-400">Max Water / Day</span>
+                  <span className="font-medium text-slate-900 dark:text-white">10,000 L</span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full">
+                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '80%' }}></div>
+                </div>
               </div>
-              <button className="px-8 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 transition-colors">
-                STOP ALL OPERATIONS
-              </button>
-            </div>
-         </GlassCard>
-      </div>
+              
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-slate-600 dark:text-slate-400">Min Soil Moisture</span>
+                  <span className="font-medium text-slate-900 dark:text-white">25%</span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full">
+                  <div className="bg-amber-500 h-2 rounded-full" style={{ width: '25%' }}></div>
+                </div>
+              </div>
 
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-slate-600 dark:text-slate-400">Max Pump Runtime</span>
+                  <span className="font-medium text-slate-900 dark:text-white">120 mins</span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full">
+                  <div className="bg-rose-500 h-2 rounded-full" style={{ width: '50%' }}></div>
+                </div>
+              </div>
+            </div>
+            <button className="w-full mt-6 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              Edit Limits
+            </button>
+          </GlassCard>
+        </div>
+
+      </div>
     </div>
   );
 }

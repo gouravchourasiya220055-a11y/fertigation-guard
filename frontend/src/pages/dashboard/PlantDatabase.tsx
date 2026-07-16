@@ -1,114 +1,107 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Sprout, CheckCircle2, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Search, Filter, Leaf } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const cropDatabase = [
-  { id: 'tomato', name: 'Tomato', ph: '5.5 - 6.5', ec: '2.0 - 5.0', stage: 'Fruiting', img: '🍅' },
-  { id: 'chilli', name: 'Chilli', ph: '5.5 - 6.8', ec: '1.8 - 2.2', stage: 'Vegetative', img: '🌶️' },
-  { id: 'onion', name: 'Onion', ph: '6.0 - 7.0', ec: '1.4 - 1.8', stage: 'Bulbing', img: '🧅' },
-  { id: 'garlic', name: 'Garlic', ph: '6.0 - 6.5', ec: '1.4 - 1.8', stage: 'Vegetative', img: '🧄' },
-  { id: 'potato', name: 'Potato', ph: '5.0 - 6.0', ec: '2.0 - 2.5', stage: 'Tuber Initiation', img: '🥔' },
-  { id: 'cotton', name: 'Cotton', ph: '5.8 - 8.0', ec: '1.5 - 2.5', stage: 'Flowering', img: '🌿' },
-  { id: 'wheat', name: 'Wheat', ph: '6.0 - 7.0', ec: '1.5 - 2.0', stage: 'Tillering', img: '🌾' },
-  { id: 'rice', name: 'Rice', ph: '5.5 - 6.5', ec: '1.5 - 2.0', stage: 'Vegetative', img: '🍚' },
-  { id: 'soybean', name: 'Soybean', ph: '6.0 - 7.0', ec: '1.2 - 1.5', stage: 'Pod Development', img: '🌱' },
-  { id: 'sugarcane', name: 'Sugarcane', ph: '6.0 - 6.5', ec: '1.5 - 2.0', stage: 'Grand Growth', img: '🎋' }
+const plantData = [
+  { crop: 'Tomato', ph: '6.0 - 6.5', ec: '2.0 - 5.0', water: 'High', temp: '21 - 27°C', humidity: '60 - 80%', duration: '90-120 days' },
+  { crop: 'Wheat', ph: '6.0 - 7.0', ec: '1.5 - 2.0', water: 'Medium', temp: '15 - 25°C', humidity: '50 - 70%', duration: '110-130 days' },
+  { crop: 'Rice', ph: '5.5 - 6.5', ec: '1.0 - 1.5', water: 'Very High', temp: '25 - 35°C', humidity: '70 - 90%', duration: '120-150 days' },
+  { crop: 'Cotton', ph: '5.8 - 8.0', ec: '2.0 - 3.0', water: 'Medium', temp: '25 - 35°C', humidity: '50 - 60%', duration: '150-180 days' },
+  { crop: 'Sugarcane', ph: '6.0 - 7.5', ec: '1.5 - 2.5', water: 'High', temp: '20 - 35°C', humidity: '60 - 85%', duration: '12-18 months' },
+  { crop: 'Chilli', ph: '6.0 - 6.8', ec: '1.8 - 2.2', water: 'Medium', temp: '20 - 30°C', humidity: '50 - 70%', duration: '120-150 days' },
+  { crop: 'Onion', ph: '6.0 - 7.0', ec: '1.4 - 1.8', water: 'Medium', temp: '15 - 25°C', humidity: '60 - 70%', duration: '100-120 days' },
+  { crop: 'Garlic', ph: '6.0 - 7.5', ec: '1.5 - 2.0', water: 'Medium', temp: '12 - 24°C', humidity: '60 - 70%', duration: '120-150 days' },
+  { crop: 'Potato', ph: '5.0 - 6.0', ec: '1.5 - 2.5', water: 'High', temp: '15 - 20°C', humidity: '60 - 80%', duration: '90-120 days' },
 ];
 
 export default function PlantDatabase() {
-  const [selectedCrop, setSelectedCrop] = useState(cropDatabase[0].id);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredData = plantData.filter(plant => 
+    plant.crop.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="space-y-6">
-      
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Plant Database</h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Select your crop to automatically update target pH and EC settings for the AI.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-6 flex flex-col h-full">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <Leaf className="w-8 h-8 text-primary" />
+            Plant Database
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Optimal growth parameters for various crops.</p>
+        </div>
         
-        {/* Active Crop Details */}
-        <div className="lg:col-span-1">
-          <GlassCard className="p-6 border-emerald-500/30 sticky top-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-emerald-500/20 text-emerald-500 rounded-xl">
-                <Sprout className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Active Crop Profile</h3>
-            </div>
-
-            {cropDatabase.filter(c => c.id === selectedCrop).map(crop => (
-              <motion.div 
-                key={crop.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <div className="flex flex-col items-center justify-center py-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-6xl mb-4">{crop.img}</span>
-                  <h4 className="text-2xl font-bold">{crop.name}</h4>
-                  <span className="px-3 py-1 mt-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-sm font-medium">
-                    {crop.stage} Stage
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-500 font-medium">Target pH</span>
-                    <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{crop.ph}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-500 font-medium">Target EC</span>
-                    <span className="font-bold text-lg text-blue-600 dark:text-blue-400">{crop.ec} mS/cm</span>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex gap-3">
-                  <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-blue-600/80 dark:text-blue-400/90">
-                    The automation system is currently using these target values to regulate the acid/base and fertilizer dosing pumps.
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </GlassCard>
-        </div>
-
-        {/* Crop Grid */}
-        <div className="lg:col-span-2">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {cropDatabase.map((crop) => (
-              <GlassCard 
-                key={crop.id}
-                onClick={() => setSelectedCrop(crop.id)}
-                className={cn(
-                  "p-4 cursor-pointer transition-all hover:scale-105 active:scale-95 group",
-                  selectedCrop === crop.id 
-                    ? "border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/20" 
-                    : "hover:border-slate-400 dark:hover:border-slate-600"
-                )}
-              >
-                <div className="flex flex-col items-center text-center gap-2 relative">
-                  {selectedCrop === crop.id && (
-                    <div className="absolute top-0 right-0">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    </div>
-                  )}
-                  <span className="text-4xl transition-transform group-hover:-translate-y-1">{crop.img}</span>
-                  <h4 className="font-semibold text-slate-900 dark:text-white mt-2">{crop.name}</h4>
-                  <div className="flex gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span>pH: {crop.ph}</span>
-                  </div>
-                </div>
-              </GlassCard>
-            ))}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Search crops..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-slate-900 dark:text-white"
+            />
           </div>
+          <button className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <Filter className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+          </button>
         </div>
-
       </div>
+
+      <GlassCard className="flex-1 overflow-hidden flex flex-col border-white/20">
+        <div className="overflow-x-auto flex-1">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+                <th className="p-4 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-white/10">Crop</th>
+                <th className="p-4 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-white/10">Ideal pH</th>
+                <th className="p-4 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-white/10">Ideal EC (mS/cm)</th>
+                <th className="p-4 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-white/10">Water Need</th>
+                <th className="p-4 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-white/10">Temperature</th>
+                <th className="p-4 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-white/10">Humidity</th>
+                <th className="p-4 font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-white/10">Growth Duration</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+              {filteredData.map((plant, index) => (
+                <motion.tr 
+                  key={plant.crop}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                >
+                  <td className="p-4 font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {plant.crop}
+                  </td>
+                  <td className="p-4 text-slate-600 dark:text-slate-400">{plant.ph}</td>
+                  <td className="p-4 text-slate-600 dark:text-slate-400">{plant.ec}</td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium
+                      ${plant.water === 'High' || plant.water === 'Very High' ? 'bg-blue-500/10 text-blue-500' : 
+                        plant.water === 'Medium' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                      }
+                    `}>
+                      {plant.water}
+                    </span>
+                  </td>
+                  <td className="p-4 text-slate-600 dark:text-slate-400">{plant.temp}</td>
+                  <td className="p-4 text-slate-600 dark:text-slate-400">{plant.humidity}</td>
+                  <td className="p-4 text-slate-600 dark:text-slate-400">{plant.duration}</td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredData.length === 0 && (
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+              No crops found matching your search.
+            </div>
+          )}
+        </div>
+      </GlassCard>
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// TODO: Replace with actual Firebase config from your Firebase project settings
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyPlaceholderKeyForFirebase",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "fertigation-guard-dev.firebaseapp.com",
