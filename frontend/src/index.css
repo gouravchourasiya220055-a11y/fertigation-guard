@@ -10,12 +10,17 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
 
+  --color-sidebar: var(--sidebar);
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -27,23 +32,25 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
+    --background: #f6f8fa;
+    --foreground: #111827;
     
     --card: #ffffff;
-    --card-foreground: #0f172a;
+    --card-foreground: #111827;
+    
+    --sidebar: #ffffff;
     
     --popover: #ffffff;
-    --popover-foreground: #0f172a;
+    --popover-foreground: #111827;
     
-    --primary: #10b981;
+    --primary: #16a34a;
     --primary-foreground: #ffffff;
     
     --secondary: #22c55e;
     --secondary-foreground: #ffffff;
     
     --muted: #f1f5f9;
-    --muted-foreground: #64748b;
+    --muted-foreground: #6b7280;
     
     --accent: #84cc16;
     --accent-foreground: #ffffff;
@@ -51,27 +58,29 @@
     --destructive: #ef4444;
     --destructive-foreground: #f8fafc;
 
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: #10b981;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #16a34a;
 
     --radius: 1rem;
   }
 
   .dark {
-    --background: #020617;
-    --foreground: #f8fafc;
+    --background: #08121d;
+    --foreground: #ffffff;
     
-    --card: rgba(15, 23, 42, 0.4);
-    --card-foreground: #f8fafc;
+    --card: #111827;
+    --card-foreground: #ffffff;
     
-    --popover: #0f172a;
-    --popover-foreground: #f8fafc;
+    --sidebar: #0f172a;
     
-    --primary: #10b981;
-    --primary-foreground: #020617;
+    --popover: #111827;
+    --popover-foreground: #ffffff;
     
-    --secondary: #22c55e;
+    --primary: #22c55e;
+    --primary-foreground: #ffffff;
+    
+    --secondary: #16a34a;
     --secondary-foreground: #ffffff;
     
     --muted: #1e293b;
@@ -83,35 +92,30 @@
     --destructive: #7f1d1d;
     --destructive-foreground: #f8fafc;
     
-    --border: rgba(255, 255, 255, 0.1);
-    --input: rgba(255, 255, 255, 0.1);
-    --ring: #10b981;
+    --border: #1f2937;
+    --input: #1f2937;
+    --ring: #22c55e;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    transition: background-color 250ms ease, border-color 250ms ease, color 250ms ease;
   }
   body {
-    @apply text-foreground antialiased selection:bg-primary/20;
+    @apply text-foreground antialiased selection:bg-primary/20 bg-background;
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Custom Background Gradient for Light/Dark mode */
-    background-color: #f8fafc;
-  }
-  .dark body {
-    background: radial-gradient(circle at top left, #064e3b 0%, #020617 50%, #0f172a 100%);
-    background-attachment: fixed;
   }
 }
 
-/* Glassmorphism Utilities */
+/* Glassmorphism Utilities (Updated to solid panels) */
 .glass {
-  @apply bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none;
+  @apply bg-card border border-border shadow-sm;
 }
 
 .glass-panel {
-  @apply bg-white/40 dark:bg-slate-800/30 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl;
+  @apply bg-card border border-border rounded-2xl;
 }
 
 /* Custom Scrollbar */

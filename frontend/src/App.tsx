@@ -25,6 +25,9 @@ import HelpSupport from "./pages/dashboard/HelpSupport";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { FarmProvider } from "./context/FarmContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { SocketProvider } from "./context/SocketContext";
+import { Toaster } from 'react-hot-toast';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -91,13 +94,18 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <FarmProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </FarmProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <FarmProvider>
+          <SocketProvider>
+            <BrowserRouter>
+              <AppRoutes />
+              <Toaster position="bottom-right" />
+            </BrowserRouter>
+          </SocketProvider>
+        </FarmProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

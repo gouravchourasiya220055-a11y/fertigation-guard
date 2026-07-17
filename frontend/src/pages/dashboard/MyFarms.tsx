@@ -13,8 +13,8 @@ export default function MyFarms() {
     switch (status) {
       case 'Active': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
       case 'Maintenance': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'Idle': return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
-      default: return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+      case 'Idle': return 'bg-slate-500/10 text-muted-foreground border-slate-500/20';
+      default: return 'bg-slate-500/10 text-muted-foreground border-slate-500/20';
     }
   };
 
@@ -22,8 +22,8 @@ export default function MyFarms() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">My Farms</h1>
-          <p className="text-slate-500 dark:text-slate-400">Manage your agricultural properties</p>
+          <h1 className="text-2xl font-bold text-foreground">My Farms</h1>
+          <p className="text-muted-foreground">Manage your agricultural properties</p>
         </div>
         <Button onClick={() => navigate('/dashboard/add-farm')} className="gap-2">
           <Plus className="w-4 h-4" />
@@ -75,8 +75,8 @@ export default function MyFarms() {
                       <Thermometer className="w-4 h-4 text-rose-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Temperature</p>
-                      <p className="font-semibold text-slate-800 dark:text-white">{farm.metrics.temperature}°C</p>
+                      <p className="text-xs text-muted-foreground">Temperature</p>
+                      <p className="font-semibold text-foreground">{farm.metrics.temperature}°C</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -84,8 +84,8 @@ export default function MyFarms() {
                       <Droplets className="w-4 h-4 text-blue-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Moisture</p>
-                      <p className="font-semibold text-slate-800 dark:text-white">{farm.metrics.moisture}%</p>
+                      <p className="text-xs text-muted-foreground">Moisture</p>
+                      <p className="font-semibold text-foreground">{farm.metrics.moisture}%</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -93,8 +93,8 @@ export default function MyFarms() {
                       <FlaskConical className="w-4 h-4 text-emerald-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Soil pH</p>
-                      <p className="font-semibold text-slate-800 dark:text-white">{farm.metrics.pH}</p>
+                      <p className="text-xs text-muted-foreground">Soil pH</p>
+                      <p className="font-semibold text-foreground">{farm.metrics.pH}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -102,8 +102,8 @@ export default function MyFarms() {
                       <Activity className="w-4 h-4 text-amber-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Soil EC</p>
-                      <p className="font-semibold text-slate-800 dark:text-white">{farm.metrics.ec}</p>
+                      <p className="text-xs text-muted-foreground">Soil EC</p>
+                      <p className="font-semibold text-foreground">{farm.metrics.ec}</p>
                     </div>
                   </div>
                 </div>

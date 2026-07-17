@@ -5,14 +5,17 @@ import { CloudSun, Droplets, Wind, Sun, CloudRain, Sunrise, Sunset, Umbrella } f
 
 export default function Weather() {
   const { activeFarm } = useFarm();
+
+  if (!activeFarm) return null;
+
   const { weather } = activeFarm;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Farm Weather</h1>
-          <p className="text-slate-500 dark:text-slate-400">Microclimate analysis for {activeFarm.name}</p>
+          <h1 className="text-2xl font-bold text-foreground">Farm Weather</h1>
+          <p className="text-muted-foreground">Microclimate analysis for {activeFarm.name}</p>
         </div>
       </div>
 
@@ -24,10 +27,10 @@ export default function Weather() {
               <CloudSun className="w-24 h-24" />
             </div>
             <div>
-              <p className="text-slate-500 dark:text-slate-400 font-medium">Temperature</p>
-              <h2 className="text-5xl font-bold text-slate-800 dark:text-white mt-2">{weather.temp}°C</h2>
+              <p className="text-muted-foreground font-medium">Temperature</p>
+              <h2 className="text-5xl font-bold text-foreground mt-2">{weather.temp}°C</h2>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-4 flex items-center gap-1">
+            <p className="text-sm text-muted-foreground mt-4 flex items-center gap-1">
               <Sun className="w-4 h-4 text-orange-500" />
               Partly Cloudy
             </p>
@@ -41,10 +44,10 @@ export default function Weather() {
               <Droplets className="w-24 h-24" />
             </div>
             <div>
-              <p className="text-slate-500 dark:text-slate-400 font-medium">Humidity</p>
-              <h2 className="text-4xl font-bold text-slate-800 dark:text-white mt-2">{weather.humidity}%</h2>
+              <p className="text-muted-foreground font-medium">Humidity</p>
+              <h2 className="text-4xl font-bold text-foreground mt-2">{weather.humidity}%</h2>
             </div>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full mt-4">
+            <div className="w-full bg-muted h-2 rounded-full mt-4">
               <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${weather.humidity}%` }} />
             </div>
           </GlassCard>
@@ -57,10 +60,10 @@ export default function Weather() {
               <CloudRain className="w-24 h-24" />
             </div>
             <div>
-              <p className="text-slate-500 dark:text-slate-400 font-medium">Precipitation Chance</p>
-              <h2 className="text-4xl font-bold text-slate-800 dark:text-white mt-2">{weather.rainChance}%</h2>
+              <p className="text-muted-foreground font-medium">Precipitation Chance</p>
+              <h2 className="text-4xl font-bold text-foreground mt-2">{weather.rainChance}%</h2>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-4 flex items-center gap-1">
+            <p className="text-sm text-muted-foreground mt-4 flex items-center gap-1">
               <Umbrella className="w-4 h-4 text-blue-400" />
               {weather.rainChance > 50 ? 'Rain Expected' : 'No Rain Expected'}
             </p>
@@ -74,10 +77,10 @@ export default function Weather() {
               <Wind className="w-24 h-24" />
             </div>
             <div>
-              <p className="text-slate-500 dark:text-slate-400 font-medium">Wind Speed</p>
-              <h2 className="text-4xl font-bold text-slate-800 dark:text-white mt-2">{weather.windSpeed} km/h</h2>
+              <p className="text-muted-foreground font-medium">Wind Speed</p>
+              <h2 className="text-4xl font-bold text-foreground mt-2">{weather.windSpeed} km/h</h2>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-4">Direction: NE</p>
+            <p className="text-sm text-muted-foreground mt-4">Direction: NE</p>
           </GlassCard>
         </motion.div>
       </div>
@@ -88,8 +91,8 @@ export default function Weather() {
             <Sunrise className="w-8 h-8 text-orange-500" />
           </div>
           <div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">Sunrise</p>
-            <p className="text-xl font-bold text-slate-800 dark:text-white">06:15 AM</p>
+            <p className="text-muted-foreground font-medium">Sunrise</p>
+            <p className="text-xl font-bold text-foreground">06:15 AM</p>
           </div>
         </GlassCard>
 
@@ -98,8 +101,8 @@ export default function Weather() {
             <Sunset className="w-8 h-8 text-purple-500" />
           </div>
           <div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">Sunset</p>
-            <p className="text-xl font-bold text-slate-800 dark:text-white">18:45 PM</p>
+            <p className="text-muted-foreground font-medium">Sunset</p>
+            <p className="text-xl font-bold text-foreground">18:45 PM</p>
           </div>
         </GlassCard>
 
@@ -108,21 +111,21 @@ export default function Weather() {
             <Sun className="w-8 h-8 text-amber-500" />
           </div>
           <div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">UV Index</p>
-            <p className="text-xl font-bold text-slate-800 dark:text-white">{weather.uvIndex} (Moderate)</p>
+            <p className="text-muted-foreground font-medium">UV Index</p>
+            <p className="text-xl font-bold text-foreground">{weather.uvIndex} (Moderate)</p>
           </div>
         </GlassCard>
       </div>
 
       <GlassCard className="p-6 mt-6">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">7-Day Forecast</h3>
+        <h3 className="text-lg font-bold text-foreground mb-6">7-Day Forecast</h3>
         <div className="flex overflow-x-auto gap-4 pb-4 custom-scrollbar">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
-            <div key={day} className="flex flex-col items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl min-w-[100px] border border-slate-200 dark:border-white/10">
-              <span className="font-semibold text-slate-700 dark:text-slate-300 mb-2">{day}</span>
+            <div key={day} className="flex flex-col items-center p-4 bg-card rounded-xl min-w-[100px] border border-border">
+              <span className="font-semibold text-foreground mb-2">{day}</span>
               {i % 3 === 0 ? <CloudRain className="w-8 h-8 text-blue-500 mb-2" /> : <Sun className="w-8 h-8 text-orange-500 mb-2" />}
-              <span className="font-bold text-slate-800 dark:text-white text-lg">{22 + (i % 5)}°C</span>
-              <span className="text-xs text-slate-500 mt-1">{i % 3 === 0 ? 'Rain' : 'Sunny'}</span>
+              <span className="font-bold text-foreground text-lg">{22 + (i % 5)}°C</span>
+              <span className="text-xs text-muted-foreground mt-1">{i % 3 === 0 ? 'Rain' : 'Sunny'}</span>
             </div>
           ))}
         </div>

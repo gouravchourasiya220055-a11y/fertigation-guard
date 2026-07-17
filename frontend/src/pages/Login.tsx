@@ -5,25 +5,32 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Demo Mode: Allow any input and immediately login
-    login();
-    navigate('/dashboard');
+    setError('');
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      login(res.data.token, res.data.user);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed');
+    }
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Password reset link has been sent (Demo Mode).");
+    alert("Password reset link has been sent.");
     setIsForgotPasswordOpen(false);
   };
 
@@ -48,13 +55,14 @@ export default function Login() {
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
             Welcome Back
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">
+          <p className="text-muted-foreground mt-2">
             Sign in to your Fertigation Guard account
           </p>
         </div>
 
         <GlassCard variant="panel" className="p-8 border-white/20">
           <form onSubmit={handleLogin} className="space-y-6" noValidate>
+            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
             <div className="space-y-4">
               <Input
                 type="text"
@@ -74,7 +82,7 @@ export default function Login() {
             </div>
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-600 dark:text-slate-400">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground">
                 <input type="checkbox" className="rounded border-slate-300 text-primary focus:ring-primary" />
                 Remember me
               </label>
@@ -95,10 +103,6 @@ export default function Login() {
               >
                 Login
               </Button>
-              <div className="text-center mt-4">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Demo Mode</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Use any Email/Username and any Password.</p>
-              </div>
             </div>
           </form>
         </GlassCard>
@@ -116,8 +120,8 @@ export default function Login() {
               className="w-full max-w-sm"
             >
               <GlassCard className="p-6 border-white/20 shadow-2xl">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Reset Password</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                <h3 className="text-xl font-bold text-foreground mb-2">Reset Password</h3>
+                <p className="text-sm text-muted-foreground mb-6">
                   Enter your email to receive a reset link.
                 </p>
                 <form onSubmit={handleForgotPassword} className="space-y-4" noValidate>

@@ -6,17 +6,20 @@ import { Button } from '@/components/ui/Button';
 
 export default function AIRecommendations() {
   const { activeFarm } = useFarm();
+  
+  if (!activeFarm) return null;
+
   const { aiRecommendations } = activeFarm;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
             AI Recommendations
           </h1>
-          <p className="text-slate-500 dark:text-slate-400">Machine learning insights for {activeFarm.name}</p>
+          <p className="text-muted-foreground">Machine learning insights for {activeFarm.name}</p>
         </div>
         <Button variant="outline" className="gap-2">
           <Sparkles className="w-4 h-4" />
@@ -46,12 +49,12 @@ export default function AIRecommendations() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-bold text-slate-800 dark:text-white">{aiRecommendations.healthScore}</span>
-                <span className="text-xs text-slate-500 font-medium">/100</span>
+                <span className="text-4xl font-bold text-foreground">{aiRecommendations.healthScore}</span>
+                <span className="text-xs text-muted-foreground font-medium">/100</span>
               </div>
             </div>
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white mt-6">AI Health Score</h3>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
+            <h3 className="text-xl font-bold text-foreground mt-6">AI Health Score</h3>
+            <p className="text-muted-foreground mt-2 text-sm">
               Calculated using historical data, current sensors, and weather forecasts.
             </p>
           </GlassCard>
@@ -65,9 +68,9 @@ export default function AIRecommendations() {
                 <Clock className="w-6 h-6 text-blue-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Best Irrigation Time</h3>
-                <p className="text-slate-600 dark:text-slate-300">{aiRecommendations.bestTime}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                <h3 className="text-lg font-bold text-foreground mb-2">Best Irrigation Time</h3>
+                <p className="text-muted-foreground">{aiRecommendations.bestTime}</p>
+                <p className="text-sm text-muted-foreground mt-2">
                   Based on soil moisture depletion rate and tomorrow's heat index, scheduling irrigation at this time will save approximately 15% water due to reduced evaporation.
                 </p>
                 <Button variant="outline" size="sm" className="mt-4">Apply Schedule</Button>
@@ -81,9 +84,9 @@ export default function AIRecommendations() {
                 <AlertTriangle className="w-6 h-6 text-rose-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Disease Prediction</h3>
-                <p className="text-slate-600 dark:text-slate-300">{aiRecommendations.diseaseRisk}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                <h3 className="text-lg font-bold text-foreground mb-2">Disease Prediction</h3>
+                <p className="text-muted-foreground">{aiRecommendations.diseaseRisk}</p>
+                <p className="text-sm text-muted-foreground mt-2">
                   The AI model analyzes temperature and humidity patterns to predict fungal or bacterial outbreaks. Current conditions show {aiRecommendations.diseaseRisk.toLowerCase()} risk.
                 </p>
                 <Button variant="outline" size="sm" className="mt-4">View Risk Map</Button>
@@ -97,9 +100,9 @@ export default function AIRecommendations() {
                 <Droplets className="w-6 h-6 text-emerald-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Water Saving Tips</h3>
-                <p className="text-slate-600 dark:text-slate-300">{aiRecommendations.waterSavingTips}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                <h3 className="text-lg font-bold text-foreground mb-2">Water Saving Tips</h3>
+                <p className="text-muted-foreground">{aiRecommendations.waterSavingTips}</p>
+                <p className="text-sm text-muted-foreground mt-2">
                   Our neural network compares your farm's performance against optimal growth models for {activeFarm.cropType}.
                 </p>
               </div>

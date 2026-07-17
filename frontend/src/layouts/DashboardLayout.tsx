@@ -28,6 +28,7 @@ import {
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useAuth } from '@/context/AuthContext';
 import { useFarm } from '@/context/FarmContext';
+import { useTheme } from '@/context/ThemeContext';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -49,7 +50,6 @@ const navItems = [
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [isDark, setIsDark] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isFarmSelectorOpen, setIsFarmSelectorOpen] = useState(false);
   
@@ -61,13 +61,8 @@ export default function DashboardLayout() {
   const { logout } = useAuth();
   const { farms, activeFarm, setActiveFarmId } = useFarm();
 
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   useEffect(() => {
     if (window.innerWidth < 768) {
@@ -96,7 +91,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden bg-slate-50 dark:bg-transparent">
+    <div className="min-h-screen flex overflow-hidden bg-background">
       
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
@@ -142,7 +137,7 @@ export default function DashboardLayout() {
                         flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
                         ${isActive 
                           ? 'bg-primary/20 text-primary font-semibold shadow-inner' 
-                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'}
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'}
                       `}
                     >
                       <item.icon className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-primary' : ''}`} />
@@ -161,7 +156,7 @@ export default function DashboardLayout() {
               <div className="p-4 mt-auto border-t border-slate-200/50 dark:border-white/10">
                 <button 
                   onClick={handleLogout}
-                  className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-500 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">Logout</span>
@@ -180,30 +175,30 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm md:hidden"
+              className="p-2 rounded-xl bg-card hover:bg-muted transition-colors border border-border shadow-sm md:hidden"
             >
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Sprout className="w-5 h-5 text-primary" />
                 Fertigation Guard
               </h1>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">AI Powered Smart Irrigation & Fertigation Platform</p>
+              <p className="text-xs font-medium text-muted-foreground">AI Powered Smart Irrigation & Fertigation Platform</p>
             </div>
             
             {/* Farm Selector */}
             <div className="relative ml-4" ref={farmSelectorRef}>
               <div 
                 onClick={() => setIsFarmSelectorOpen(!isFarmSelectorOpen)}
-                className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 backdrop-blur-md cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors shadow-sm"
+                className="flex items-center gap-3 px-4 py-2 rounded-xl bg-card border border-border cursor-pointer hover:bg-muted transition-colors shadow-sm"
               >
                 <div className="flex flex-col">
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Select Farm</span>
-                  <span className="text-sm font-bold text-slate-800 dark:text-white">{activeFarm.name}</span>
+                  <span className="text-xs text-muted-foreground font-medium">Select Farm</span>
+                  <span className="text-sm font-bold text-foreground">{activeFarm?.name || 'Loading...'}</span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isFarmSelectorOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isFarmSelectorOpen ? 'rotate-180' : ''}`} />
               </div>
 
               <AnimatePresence>
@@ -212,7 +207,7 @@ export default function DashboardLayout() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden z-50 max-h-96 overflow-y-auto custom-scrollbar"
+                    className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-card border border-border shadow-xl overflow-hidden z-50 max-h-96 overflow-y-auto custom-scrollbar"
                   >
                     {farms.map((farm) => (
                       <div 
@@ -221,12 +216,12 @@ export default function DashboardLayout() {
                           setActiveFarmId(farm.id);
                           setIsFarmSelectorOpen(false);
                         }}
-                        className={`p-3 border-b border-slate-100 dark:border-white/5 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 ${activeFarm.id === farm.id ? 'bg-primary/5 dark:bg-primary/10' : ''}`}
+                        className={`p-3 border-b border-border cursor-pointer transition-colors hover:bg-muted ${activeFarm?.id === farm.id ? 'bg-primary/10' : ''}`}
                       >
-                        <div className="font-semibold text-sm text-slate-800 dark:text-white">{farm.name}</div>
+                        <div className="font-semibold text-sm text-foreground">{farm.name}</div>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">{farm.cropType}</span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">{farm.area} Acres</span>
+                          <span className="text-xs text-muted-foreground">{farm.area} Acres</span>
                         </div>
                       </div>
                     ))}
@@ -235,7 +230,7 @@ export default function DashboardLayout() {
                         navigate('/dashboard/add-farm');
                         setIsFarmSelectorOpen(false);
                       }}
-                      className="p-3 bg-slate-50 dark:bg-slate-900/50 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 text-center transition-colors"
+                      className="p-3 bg-muted cursor-pointer hover:bg-muted/80 text-center transition-colors"
                     >
                       <span className="text-sm font-medium text-primary flex items-center justify-center gap-2">
                         + Add Custom Farm
@@ -249,8 +244,8 @@ export default function DashboardLayout() {
 
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => setIsDark(!isDark)}
-              className="p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm group"
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className="p-3 rounded-xl bg-card hover:bg-muted transition-all border border-border shadow-sm group"
             >
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -265,17 +260,17 @@ export default function DashboardLayout() {
               </AnimatePresence>
             </button>
 
-            <button className="relative p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm">
-              <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full" />
+            <button className="relative p-3 rounded-xl bg-card hover:bg-muted transition-all border border-border shadow-sm">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-background rounded-full" />
             </button>
 
             <div className="relative" ref={profileRef}>
               <div 
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="h-12 w-12 rounded-xl bg-gradient-to-tr from-emerald-400 to-accent p-0.5 shadow-md shadow-emerald-500/20 cursor-pointer overflow-hidden transition-transform hover:scale-105"
+                className="h-12 w-12 rounded-xl bg-gradient-to-tr from-primary to-accent p-0.5 shadow-md shadow-primary/20 cursor-pointer overflow-hidden transition-transform hover:scale-105"
               >
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer" alt="Profile" className="w-full h-full bg-slate-100 dark:bg-slate-800 rounded-[10px]" />
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer" alt="Profile" className="w-full h-full bg-card rounded-[10px]" />
               </div>
 
               <AnimatePresence>
@@ -285,29 +280,29 @@ export default function DashboardLayout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden z-50"
+                    className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-card border border-border shadow-xl overflow-hidden z-50"
                   >
                     <div className="py-1">
                       <button 
                         onClick={() => navigate('/dashboard/profile')}
-                        className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                        className="flex w-full items-center px-4 py-2 text-sm text-foreground hover:bg-muted"
                       >
-                        <User className="mr-3 h-4 w-4 text-slate-400" />
+                        <User className="mr-3 h-4 w-4 text-muted-foreground" />
                         Profile
                       </button>
                       <button 
                         onClick={() => navigate('/dashboard/settings')}
-                        className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                        className="flex w-full items-center px-4 py-2 text-sm text-foreground hover:bg-muted"
                       >
-                        <Settings2 className="mr-3 h-4 w-4 text-slate-400" />
+                        <Settings2 className="mr-3 h-4 w-4 text-muted-foreground" />
                         Settings
                       </button>
-                      <div className="my-1 border-t border-slate-200 dark:border-white/10" />
+                      <div className="my-1 border-t border-border" />
                       <button 
                         onClick={handleLogout}
-                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        className="flex w-full items-center px-4 py-2 text-sm text-destructive hover:bg-destructive/10"
                       >
-                        <LogOut className="mr-3 h-4 w-4 text-red-500" />
+                        <LogOut className="mr-3 h-4 w-4 text-destructive" />
                         Logout
                       </button>
                     </div>

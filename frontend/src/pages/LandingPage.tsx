@@ -168,7 +168,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/10 text-center text-slate-500">
+      <footer className="py-12 border-t border-white/10 text-center text-muted-foreground">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
             <Sprout className="w-5 h-5 text-emerald-500" />

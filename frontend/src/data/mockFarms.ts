@@ -2,7 +2,14 @@ export interface Farm {
   id: string;
   name: string;
   cropType: string;
-  area: number; // in acres
+  area: number; 
+  areaUnit?: string;
+  totalPlants?: number;
+  dailyWater?: number;
+  nReq?: number;
+  pReq?: number;
+  kReq?: number;
+  pumpRuntimeHours?: number;
   location: string;
   status: 'Active' | 'Maintenance' | 'Idle';
   image: string;
@@ -15,8 +22,11 @@ export interface Farm {
     fertilizerUsageToday: number;
     pumpStatus: 'ON' | 'OFF';
     valveStatus: 'Open' | 'Closed';
+    stirrerStatus: 'ON' | 'OFF';
+    flushStatus: 'Open' | 'Closed';
     internetStatus: 'Online' | 'Offline';
     batteryLevel: number;
+    waterLevel?: number;
   };
   weather: {
     temp: number;
@@ -35,6 +45,7 @@ export interface Farm {
     lat: number;
     lng: number;
   };
+  deviceId?: string;
 }
 
 export const mockFarms: Farm[] = [
@@ -55,6 +66,8 @@ export const mockFarms: Farm[] = [
       fertilizerUsageToday: 4.5,
       pumpStatus: 'ON',
       valveStatus: 'Open',
+      stirrerStatus: 'OFF',
+      flushStatus: 'Closed',
       internetStatus: 'Online',
       batteryLevel: 98
     },
@@ -90,6 +103,8 @@ export const mockFarms: Farm[] = [
       fertilizerUsageToday: 12.0,
       pumpStatus: 'OFF',
       valveStatus: 'Closed',
+      stirrerStatus: 'OFF',
+      flushStatus: 'Closed',
       internetStatus: 'Online',
       batteryLevel: 85
     },
@@ -125,6 +140,8 @@ export const mockFarms: Farm[] = [
       fertilizerUsageToday: 8.5,
       pumpStatus: 'ON',
       valveStatus: 'Open',
+      stirrerStatus: 'OFF',
+      flushStatus: 'Closed',
       internetStatus: 'Online',
       batteryLevel: 100
     },
@@ -160,6 +177,8 @@ export const mockFarms: Farm[] = [
       fertilizerUsageToday: 0,
       pumpStatus: 'OFF',
       valveStatus: 'Closed',
+      stirrerStatus: 'OFF',
+      flushStatus: 'Closed',
       internetStatus: 'Offline',
       batteryLevel: 20
     },
@@ -195,6 +214,8 @@ export const mockFarms: Farm[] = [
       fertilizerUsageToday: 15.0,
       pumpStatus: 'ON',
       valveStatus: 'Open',
+      stirrerStatus: 'OFF',
+      flushStatus: 'Closed',
       internetStatus: 'Online',
       batteryLevel: 92
     },
@@ -230,6 +251,8 @@ export const mockFarms: Farm[] = [
       fertilizerUsageToday: 2.5,
       pumpStatus: 'OFF',
       valveStatus: 'Closed',
+      stirrerStatus: 'OFF',
+      flushStatus: 'Closed',
       internetStatus: 'Online',
       batteryLevel: 88
     },
@@ -265,6 +288,8 @@ export const mockFarms: Farm[] = [
       fertilizerUsageToday: 3.0,
       pumpStatus: 'ON',
       valveStatus: 'Open',
+      stirrerStatus: 'OFF',
+      flushStatus: 'Closed',
       internetStatus: 'Online',
       batteryLevel: 95
     },

@@ -13,7 +13,7 @@ export default function Profile() {
         <div className="p-3 bg-primary/10 text-primary rounded-xl">
           <User className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Profile</h1>
+        <h1 className="text-2xl font-bold text-foreground">Profile</h1>
       </div>
 
       <GlassCard className="p-8 border-white/20">
@@ -23,7 +23,7 @@ export default function Profile() {
               <img 
                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer" 
                 alt="Profile Avatar" 
-                className="w-full h-full bg-slate-100 dark:bg-slate-800 rounded-[12px]" 
+                className="w-full h-full bg-muted rounded-[12px]" 
               />
             </div>
             <Button variant="outline" size="sm" className="w-full mt-4">Change Avatar</Button>
@@ -32,20 +32,20 @@ export default function Profile() {
           <div className="flex-1 space-y-6 w-full max-w-md">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Full Name
                 </label>
                 <Input type="text" defaultValue="John Doe" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Email Address
                 </label>
                 <Input type="email" defaultValue="admin@fertigationguard.com" disabled />
               </div>
             </div>
             
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex gap-4">
+            <div className="pt-4 border-t border-border flex gap-4">
               <Button variant="primary">Save Profile</Button>
               <Button variant="destructive" onClick={logout}>Sign Out</Button>
             </div>

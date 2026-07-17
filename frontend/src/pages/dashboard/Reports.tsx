@@ -1,27 +1,52 @@
 import { motion } from 'framer-motion';
 import { useFarm } from '@/context/FarmContext';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { FileText, Download, Calendar, BarChart2 } from 'lucide-react';
+import { FileText, Download, Calendar, Droplets, Zap, Leaf, DollarSign, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import api from '@/lib/api';
 
 export default function Reports() {
   const { activeFarm } = useFarm();
 
+  if (!activeFarm) return null;
+
   const reportTypes = [
-    { title: 'Daily Summary', desc: 'Water usage, pH/EC averages, and alerts for today.', icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { title: 'Weekly Analysis', desc: 'Crop growth progress and resource consumption trends.', icon: BarChart2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { title: 'Monthly Audit', desc: 'Comprehensive yield estimates and system health report.', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { type: 'daily-water', title: 'Daily Water Usage', desc: 'Detailed hourly breakdown of water consumption.', icon: Droplets, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { type: 'daily-fertilizer', title: 'Daily Fertilizer Usage', desc: 'NPK and micronutrient application logs.', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { type: 'monthly', title: 'Monthly Consumption', desc: 'Aggregated resource usage for the month.', icon: Calendar, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { type: 'yield', title: 'Estimated Yield', desc: 'AI-driven crop yield predictions.', icon: Leaf, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { type: 'cost', title: 'Cost Analysis', desc: 'Financial breakdown of inputs vs expected yield.', icon: DollarSign, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { type: 'savings', title: 'Water Saving Report', desc: 'Metrics on water saved via AI precision.', icon: Activity, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
   ];
+
+  const handleDownload = async (type: string, format: string) => {
+    try {
+      const res = await api.get(`/reports/daily?farmId=${activeFarm?.id}&type=${type}`);
+      const dataStr = JSON.stringify(res.data.data, null, 2);
+      
+      // Simple generic download
+      const blob = new Blob([dataStr], { type: format === 'json' ? 'application/json' : 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${activeFarm?.name}_${type}_report.${format}`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating report', error);
+      alert('Error generating report');
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <FileText className="w-6 h-6 text-primary" />
             Farm Reports
           </h1>
-          <p className="text-slate-500 dark:text-slate-400">Export data and analytics for {activeFarm.name}</p>
+          <p className="text-muted-foreground">Export data and analytics for {activeFarm.name}</p>
         </div>
       </div>
 
@@ -34,19 +59,19 @@ export default function Reports() {
                   <report.icon className={`w-6 h-6 ${report.color}`} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-white">{report.title}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{report.desc}</p>
+                  <h3 className="text-lg font-bold text-foreground">{report.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{report.desc}</p>
                 </div>
               </div>
               
               <div className="mt-auto space-y-3 pt-6">
-                <Button className="w-full gap-2" variant="outline" onClick={() => alert('PDF generation is disabled in demo mode.')}>
+                <Button className="w-full gap-2" variant="outline" onClick={() => handleDownload(report.type, 'json')}>
                   <Download className="w-4 h-4" />
-                  Download PDF
+                  Download JSON
                 </Button>
-                <Button className="w-full gap-2" variant="outline" onClick={() => alert('CSV export is disabled in demo mode.')}>
+                <Button className="w-full gap-2" variant="outline" onClick={() => handleDownload(report.type, 'csv')}>
                   <Download className="w-4 h-4" />
-                  Export CSV
+                  Export CSV (Raw)
                 </Button>
               </div>
             </GlassCard>
@@ -55,11 +80,11 @@ export default function Reports() {
       </div>
 
       <GlassCard className="p-6 mt-8">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Recent Exports</h3>
+        <h3 className="text-lg font-bold text-foreground mb-6">Recent Exports</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400">
+              <tr className="border-b border-border text-sm text-muted-foreground">
                 <th className="pb-3 font-medium">Date</th>
                 <th className="pb-3 font-medium">Report Type</th>
                 <th className="pb-3 font-medium">Format</th>
@@ -69,13 +94,13 @@ export default function Reports() {
             </thead>
             <tbody className="text-sm">
               {[1, 2, 3].map((i) => (
-                <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                  <td className="py-4 text-slate-800 dark:text-slate-300">Oct {15 - i}, 2026</td>
-                  <td className="py-4 text-slate-800 dark:text-slate-300 font-medium">Weekly Analysis</td>
+                <tr key={i} className="border-b border-border last:border-0 hover:bg-muted transition-colors">
+                  <td className="py-4 text-foreground">Oct {15 - i}, 2026</td>
+                  <td className="py-4 text-foreground font-medium">Weekly Analysis</td>
                   <td className="py-4">
                     <span className="px-2 py-1 bg-red-500/10 text-red-500 rounded text-xs font-medium">PDF</span>
                   </td>
-                  <td className="py-4 text-slate-500">Auto-Scheduler</td>
+                  <td className="py-4 text-muted-foreground">Auto-Scheduler</td>
                   <td className="py-4 text-right">
                     <Button variant="ghost" size="sm" className="h-8">Download</Button>
                   </td>
