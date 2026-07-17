@@ -2,13 +2,12 @@
   "name": "fertigation-guard-backend",
   "version": "1.0.0",
   "description": "Backend API for Fertigation Guard",
-  "main": "dist/index.js",
+ "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
-  },
+  "start": "node src/index.js",
+  "dev": "node src/index.js"
+},
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
