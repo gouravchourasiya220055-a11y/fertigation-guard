@@ -14,6 +14,10 @@ export const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (process.env.DEMO_MODE === 'true' && decoded.id === 'demo-user') {
+      req.user = { id: 'demo-user', _id: 'demo-user', role: 'admin' };
+      return next();
+    }
     req.user = await User.findById(decoded.id);
     next();
   } catch (err) {

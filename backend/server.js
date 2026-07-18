@@ -8,6 +8,7 @@ import connectDB from './config/db.js';
 import initializeSocket from './config/socket.js';
 import logger from './utils/logger.js';
 import errorHandler from './middleware/errorHandler.js';
+import { mockApiResponses } from './middleware/demoMockData.js';
 
 import authRoutes from './routes/auth.routes.js';
 import farmRoutes from './routes/farm.routes.js';
@@ -49,6 +50,9 @@ app.use((req, res, next) => {
   logger.info(`[${req.method}] ${req.originalUrl} - Body: ${JSON.stringify(req.body)}`);
   next();
 });
+
+// Demo Mode Mock Data Interceptor
+app.use(mockApiResponses);
 
 // Routes
 app.use('/api/auth', authRoutes);
