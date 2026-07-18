@@ -18,6 +18,7 @@ const SensorDataSchema = new mongoose.Schema(
     soilMoisture: { type: Number },
     ph: { type: Number },
     ec: { type: Number },
+    tds: { type: Number },
     waterTank: { type: Number },
     rssi: { type: Number },
     relay: {

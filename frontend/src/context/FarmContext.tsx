@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import api from '../lib/api';
 import { socket } from '../lib/socket';
-
 
 export interface Farm {
   id: string;
@@ -70,122 +69,105 @@ export function FarmProvider({ children }: { children: ReactNode }) {
   const [farms, setFarms] = useState<Farm[]>([]);
   const [activeFarmId, setActiveFarmId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  
+  // Track last telemetry time per farm for offline detection
+  const lastTelemetryRef = useRef<Record<string, number>>({});
 
-  // Fetch initial farms
+  // Fetch initial farms and live telemetry
   useEffect(() => {
-    fetchFarms();
+    fetchFarmsAndLive();
   }, []);
 
-  const fetchFarms = async () => {
+  const fetchFarmsAndLive = async () => {
     setIsLoading(true);
 
     try {
-      const res = await api.get('/farms');
-      const backendFarms = res.data.data;
+      const [farmsRes, liveRes] = await Promise.all([
+        api.get('/farms'),
+        api.get('/live').catch(() => ({ data: { data: null } }))
+      ]);
+      
+      const backendFarms = farmsRes.data.data;
+      const latestData = liveRes.data?.data;
 
       if (backendFarms.length > 0) {
-        const mappedFarms: Farm[] = backendFarms.map((f: any) => mapBackendFarmToUI(f));
+        const mappedFarms: Farm[] = backendFarms.map((f: any) => {
+           const farmObj = mapBackendFarmToUI(f);
+           if (latestData && (latestData.farm === f._id || latestData.deviceId === f.esp32DeviceId)) {
+             applyTelemetry(farmObj, latestData);
+             lastTelemetryRef.current[f._id] = Date.now();
+           }
+           return farmObj;
+        });
         setFarms(mappedFarms);
         setActiveFarmId(mappedFarms[0].id);
       }
     } catch (error) {
-      console.error('Error fetching farms:', error);
+      console.error('Error fetching initial data:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (activeFarmId) {
-      fetchFarmData(activeFarmId);
-
-      const interval = setInterval(() => {
-        fetchFarmData(activeFarmId);
-      }, 2000);
-
-      return () => clearInterval(interval);
-    }
-  }, [activeFarmId]);
-
-  const fetchFarmData = async (farmId: string) => {
-    try {
-      // Fetch latest dashboard data from explicit new endpoints
-      const [sensorRes, relayRes] = await Promise.all([
-        api.get('/sensors/latest'),
-        api.get('/relays')
-      ]);
-      const latestSensorData = sensorRes.data.data;
-      const relayData = relayRes.data.data;
-      
-      const farmObj = farms.find(f => f.id === farmId);
-      if(!farmObj) return;
-
-      // Fetch Weather
-      const weatherRes = await api.get(`/weather?location=${farmObj.location}`);
-      const weatherData = weatherRes.data.data;
-
-      setFarms(prev => prev.map(f => {
-        if (f.id === farmId) {
-          return {
-            ...f,
-            metrics: {
-              ...f.metrics,
-              temperature: latestSensorData?.temperature || f.metrics.temperature,
-              moisture: latestSensorData?.soilMoisture || f.metrics.moisture,
-              pH: latestSensorData?.ph || f.metrics.pH,
-              ec: latestSensorData?.ec || f.metrics.ec,
-              waterLevel: latestSensorData?.waterTank || f.metrics.waterLevel,
-              pumpStatus: relayData?.waterPump ? 'ON' : 'OFF',
-              valveStatus: relayData?.peristalticPump ? 'Open' : 'Closed', // Re-mapping peristaltic to zone valve for UI display
-              stirrerStatus: relayData?.stirrer ? 'ON' : 'OFF',
-              flushStatus: relayData?.flushValve ? 'Open' : 'Closed',
-              batteryLevel: f.metrics.batteryLevel,
-            },
-            weather: {
-              ...f.weather,
-              temp: weatherData.temperature,
-              humidity: weatherData.humidity,
-              windSpeed: weatherData.windSpeed,
-            }
-          };
-        }
-        return f;
-      }));
-    } catch (error) {
-      console.error('Error fetching farm metrics:', error);
+  const applyTelemetry = (farmObj: Farm, telemetry: any) => {
+    farmObj.metrics.temperature = telemetry.temperature ?? farmObj.metrics.temperature;
+    farmObj.metrics.moisture = telemetry.soilMoisture ?? farmObj.metrics.moisture;
+    farmObj.metrics.pH = telemetry.ph ?? farmObj.metrics.pH;
+    farmObj.metrics.ec = telemetry.tds ?? telemetry.ec ?? farmObj.metrics.ec;
+    farmObj.metrics.waterLevel = telemetry.waterTank ?? farmObj.metrics.waterLevel;
+    
+    if (telemetry.relay) {
+       farmObj.metrics.pumpStatus = telemetry.relay.pump ? 'ON' : 'OFF';
+       farmObj.metrics.valveStatus = telemetry.relay.fertilizer ? 'Open' : 'Closed';
+       farmObj.metrics.stirrerStatus = telemetry.relay.stirrer ? 'ON' : 'OFF';
+       farmObj.metrics.flushStatus = telemetry.relay.flush ? 'Open' : 'Closed';
     }
   };
 
-  // Socket.io listeners
+  // Socket.io telemetry listener
   useEffect(() => {
-    socket.on('sensor_update', (latestData: any) => {
-      const farmId = latestData.farm;
+    socket.on('telemetry', (latestData: any) => {
       setFarms(prev => prev.map(f => {
-        if (f.id === farmId && latestData) {
-          return {
-            ...f,
-            metrics: {
-              ...f.metrics,
-              temperature: latestData.temperature,
-              moisture: latestData.soilMoisture,
-              pH: latestData.ph,
-              ec: latestData.ec,
-              waterLevel: latestData.waterTank,
-              pumpStatus: latestData.relay?.pump ? 'ON' : 'OFF',
-              valveStatus: latestData.relay?.fertilizer ? 'Open' : 'Closed',
-              stirrerStatus: latestData.relay?.stirrer ? 'ON' : 'OFF',
-              flushStatus: latestData.relay?.flush ? 'Open' : 'Closed',
-              batteryLevel: f.metrics.batteryLevel,
-            }
-          };
+        if (f.id === latestData.farm || f.deviceId === latestData.deviceId) {
+          lastTelemetryRef.current[f.id] = Date.now();
+          const updatedFarm = { ...f };
+          updatedFarm.metrics = { ...f.metrics };
+          updatedFarm.metrics.internetStatus = 'Online';
+          applyTelemetry(updatedFarm, latestData);
+          return updatedFarm;
         }
         return f;
       }));
     });
 
     return () => {
-      socket.off('sensor_update');
+      socket.off('telemetry');
     };
+  }, []);
+
+  // Offline checker
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setFarms(prev => prev.map(f => {
+        const lastSeen = lastTelemetryRef.current[f.id];
+        // If last seen is older than 10 seconds, mark as offline
+        if (lastSeen && (now - lastSeen > 10000)) {
+          if (f.metrics.internetStatus !== 'Offline') {
+            return {
+              ...f,
+              metrics: {
+                ...f.metrics,
+                internetStatus: 'Offline'
+              }
+            };
+          }
+        }
+        return f;
+      }));
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const activeFarm = farms.find(f => f.id === activeFarmId) || null;
@@ -228,7 +210,7 @@ export function useFarm() {
   return context;
 }
 
-// Helper to map DB farm to UI farm with default mocked values for things we don't have yet
+// Helper to map DB farm to UI farm
 function mapBackendFarmToUI(dbFarm: any): Farm {
   return {
     id: dbFarm._id,
@@ -246,19 +228,19 @@ function mapBackendFarmToUI(dbFarm: any): Farm {
     status: 'Active',
     image: dbFarm.farmImage || 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&q=80&w=600',
     metrics: {
-      temperature: 24,
-      moisture: 60,
-      pH: dbFarm.targetPh || 6.0,
-      ec: dbFarm.targetEc || 1.5,
+      temperature: 0,
+      moisture: 0,
+      pH: 0,
+      ec: 0,
       waterUsageToday: 0,
       fertilizerUsageToday: 0,
       pumpStatus: 'OFF',
       valveStatus: 'Closed',
       stirrerStatus: 'OFF',
       flushStatus: 'Closed',
-      internetStatus: 'Online',
+      internetStatus: 'Offline', // default to offline until telemetry arrives
       batteryLevel: 100,
-      waterLevel: 75
+      waterLevel: 0
     },
     weather: {
       temp: 25,
@@ -270,9 +252,10 @@ function mapBackendFarmToUI(dbFarm: any): Farm {
     aiRecommendations: {
       bestTime: '06:00 AM',
       diseaseRisk: 'Low',
-      waterSavingTips: 'Maintain current schedule.',
-      healthScore: 90
+      waterSavingTips: 'Ensure internet connectivity.',
+      healthScore: 0
     },
-    mapCoordinates: { lat: dbFarm.gpsLocation?.lat || 34.05, lng: dbFarm.gpsLocation?.lng || -118.24 }
+    mapCoordinates: { lat: dbFarm.gpsLocation?.lat || 34.05, lng: dbFarm.gpsLocation?.lng || -118.24 },
+    deviceId: dbFarm.esp32DeviceId
   };
 }

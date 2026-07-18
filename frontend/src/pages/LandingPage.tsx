@@ -35,7 +35,7 @@ export default function LandingPage() {
             <a href="#technology" className="hover:text-white transition-colors">Technology</a>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-medium hover:text-white transition-colors hidden sm:block">Sign In</Link>
+            <Link to="/dashboard" className="text-sm font-medium hover:text-white transition-colors hidden sm:block">Sign In</Link>
             <Link to="/dashboard">
               <Button className="bg-white text-slate-950 hover:bg-slate-200 shadow-xl shadow-white/10 rounded-full px-6">
                 Go to Dashboard

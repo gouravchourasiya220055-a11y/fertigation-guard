@@ -6,7 +6,25 @@ import { calculateFarmRequirements } from '../utils/calculations.js';
 // @access  Private
 export const getFarms = async (req, res, next) => {
   try {
-    const farms = await Farm.find({ user: req.user.id });
+    let farms = await Farm.find({});
+    
+    // Auto-create default farm if empty
+    if (farms.length === 0) {
+      const demoFarm = await Farm.create({
+        name: 'Demo Farm',
+        esp32DeviceId: 'FG001',
+        crop: 'Demo Crop',
+        area: 1,
+        targetPh: 6.0,
+        targetEc: 1.5,
+        targetMoisture: 60,
+        waterTankCapacity: 100,
+        fertilizerTankCapacity: 100,
+        status: 'Online'
+      });
+      farms = [demoFarm];
+    }
+    
     res.status(200).json({ success: true, data: farms });
   } catch (error) {
     next(error);
@@ -19,7 +37,7 @@ export const getFarms = async (req, res, next) => {
 export const getFarm = async (req, res, next) => {
   try {
     const farm = await Farm.findById(req.params.id);
-    if (!farm || farm.user.toString() !== req.user.id) {
+    if (!farm) {
       return res.status(404).json({ success: false, message: 'Farm not found' });
     }
     res.status(200).json({ success: true, data: farm });
@@ -33,8 +51,7 @@ export const getFarm = async (req, res, next) => {
 // @access  Private
 export const createFarm = async (req, res, next) => {
   try {
-    req.body.user = req.user.id;
-    
+
     // Automatically calculate requirements if crop and area are provided
     if (req.body.crop && req.body.area) {
       const requirements = calculateFarmRequirements(
@@ -62,7 +79,7 @@ export const createFarm = async (req, res, next) => {
 export const updateFarm = async (req, res, next) => {
   try {
     let farm = await Farm.findById(req.params.id);
-    if (!farm || farm.user.toString() !== req.user.id) {
+    if (!farm) {
       return res.status(404).json({ success: false, message: 'Farm not found' });
     }
     
@@ -91,7 +108,7 @@ export const updateFarm = async (req, res, next) => {
 export const deleteFarm = async (req, res, next) => {
   try {
     const farm = await Farm.findById(req.params.id);
-    if (!farm || farm.user.toString() !== req.user.id) {
+    if (!farm) {
       return res.status(404).json({ success: false, message: 'Farm not found' });
     }
     await farm.deleteOne();

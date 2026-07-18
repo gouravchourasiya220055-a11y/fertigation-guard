@@ -18,6 +18,7 @@ import alertRoutes from './routes/alert.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import deviceRoutes from './routes/device.routes.js';
 import relayRoutes from './routes/relay.routes.js';
+import telemetryRoutes from './routes/telemetry.routes.js';
 
 dotenv.config();
 
@@ -48,8 +49,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Demo Mode Mock Data
-app.use(mockApiResponses);
+// Demo Mode Mock Data Removed
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -59,6 +59,7 @@ app.use('/api/sensors', sensorRoutes);
 app.use('/api/automation', automationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/relays', relayRoutes);
+app.use('/api/telemetry', telemetryRoutes);
 
 app.get('/', (req, res) => {
   res.send('Fertigation Guard API is running...');
