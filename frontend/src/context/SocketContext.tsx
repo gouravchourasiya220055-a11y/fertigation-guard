@@ -26,8 +26,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     // Assuming backend runs on the same host but port 5000 in dev
     // In production, it might just be the same origin or read from env.
-    const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-    
+   const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://fertigation-backend-gourav.onrender.com'
     const newSocket = io(backendUrl, {
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,

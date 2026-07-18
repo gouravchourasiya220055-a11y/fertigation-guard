@@ -3,7 +3,55 @@ import api from '../lib/api';
 import { socket } from '../lib/socket';
 import { useAuth } from './AuthContext';
 
-import { Farm } from '../data/mockFarms';
+export interface Farm {
+  id: string;
+  name: string;
+  cropType: string;
+  area: number; 
+  areaUnit?: string;
+  totalPlants?: number;
+  dailyWater?: number;
+  nReq?: number;
+  pReq?: number;
+  kReq?: number;
+  pumpRuntimeHours?: number;
+  location: string;
+  status: 'Active' | 'Maintenance' | 'Idle';
+  image: string;
+  metrics: {
+    temperature: number;
+    moisture: number;
+    pH: number;
+    ec: number;
+    waterUsageToday: number;
+    fertilizerUsageToday: number;
+    pumpStatus: 'ON' | 'OFF';
+    valveStatus: 'Open' | 'Closed';
+    stirrerStatus: 'ON' | 'OFF';
+    flushStatus: 'Open' | 'Closed';
+    internetStatus: 'Online' | 'Offline';
+    batteryLevel: number;
+    waterLevel?: number;
+  };
+  weather: {
+    temp: number;
+    humidity: number;
+    rainChance: number;
+    windSpeed: number;
+    uvIndex: number;
+  };
+  aiRecommendations: {
+    bestTime: string;
+    diseaseRisk: string;
+    waterSavingTips: string;
+    healthScore: number;
+  };
+  mapCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  deviceId?: string;
+}
 
 interface FarmContextType {
   farms: Farm[];
@@ -35,12 +83,12 @@ export function FarmProvider({ children }: { children: ReactNode }) {
 
   const fetchFarms = async () => {
     setIsLoading(true);
+
     try {
       const res = await api.get('/farms');
       const backendFarms = res.data.data;
 
       if (backendFarms.length > 0) {
-        // Map backend farms to UI structure. We will fetch real metrics per farm later.
         const mappedFarms: Farm[] = backendFarms.map((f: any) => mapBackendFarmToUI(f));
         setFarms(mappedFarms);
         setActiveFarmId(mappedFarms[0].id);
