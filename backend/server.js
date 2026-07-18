@@ -24,9 +24,6 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 
-// Connect to Database
-connectDB();
-
 // Initialize Socket.io
 initializeSocket(httpServer);
 
@@ -38,8 +35,8 @@ app.use(helmet());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -51,14 +48,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Demo Mode Mock Data Interceptor
+// Demo Mode Mock Data
 app.use(mockApiResponses);
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/farms', farmRoutes);
-app.use('/api/device', deviceRoutes); 
-app.use('/api/sensors', sensorRoutes); 
+app.use('/api/device', deviceRoutes);
+app.use('/api/sensors', sensorRoutes);
 app.use('/api/automation', automationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/relays', relayRoutes);
@@ -68,19 +65,39 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'success', message: 'API is healthy', timestamp: new Date() });
+  res.status(200).json({
+    status: 'success',
+    message: 'API is healthy',
+    timestamp: new Date()
+  });
 });
 
-// Error handling middleware
+// Error Handler
 app.use(errorHandler);
+
 const PORT = process.env.PORT || 5000;
 const HOST = "0.0.0.0";
 
-httpServer.listen(PORT, HOST, () => {
-  logger.info("==========================================");
-  logger.info(`🚀 Fertigation Guard Backend Started`);
-  logger.info(`📡 Server Address : http://${HOST}:${PORT}`);
-  logger.info(`💻 Local URL      : http://localhost:${PORT}`);
-  logger.info(`🌐 Network URL    : http://10.109.2.187:${PORT}`);
-  logger.info("==========================================");
-});
+// ==============================
+// Start Server After MongoDB
+// ==============================
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    httpServer.listen(PORT, HOST, () => {
+      logger.info("==========================================");
+      logger.info("🚀 Fertigation Guard Backend Started");
+      logger.info(`📡 Server Address : http://${HOST}:${PORT}`);
+      logger.info(`💻 Local URL      : http://localhost:${PORT}`);
+      logger.info(`🌐 Network URL    : http://10.109.2.187:${PORT}`);
+      logger.info("==========================================");
+    });
+
+  } catch (err) {
+    logger.error("Server failed to start:", err);
+    process.exit(1);
+  }
+};
+
+startServer();
