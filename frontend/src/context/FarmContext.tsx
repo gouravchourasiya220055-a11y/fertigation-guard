@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import api from '../lib/api';
 import { socket } from '../lib/socket';
-import { useAuth } from './AuthContext';
+
 
 export interface Farm {
   id: string;
@@ -66,20 +66,15 @@ interface FarmContextType {
 const FarmContext = createContext<FarmContextType | undefined>(undefined);
 
 export function FarmProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
+
   const [farms, setFarms] = useState<Farm[]>([]);
   const [activeFarmId, setActiveFarmId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Fetch initial farms
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchFarms();
-    } else {
-      setFarms([]);
-      setActiveFarmId('');
-    }
-  }, [isAuthenticated]);
+    fetchFarms();
+  }, []);
 
   const fetchFarms = async () => {
     setIsLoading(true);
@@ -101,17 +96,16 @@ export function FarmProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    if (activeFarmId && isAuthenticated) {
+    if (activeFarmId) {
       fetchFarmData(activeFarmId);
 
-      // Polling every 2 seconds as requested for explicit dashboard refresh
       const interval = setInterval(() => {
         fetchFarmData(activeFarmId);
       }, 2000);
 
       return () => clearInterval(interval);
     }
-  }, [activeFarmId, isAuthenticated]);
+  }, [activeFarmId]);
 
   const fetchFarmData = async (farmId: string) => {
     try {
@@ -164,41 +158,35 @@ export function FarmProvider({ children }: { children: ReactNode }) {
 
   // Socket.io listeners
   useEffect(() => {
-    if (isAuthenticated) {
-      socket.on('sensor_update', (latestData: any) => {
-        // The backend emits sensor_update with the SensorData object directly
-        // However, we need to know which farm it belongs to, but it emits to the farmId room
-        // so we'll just update the activeFarm or find it by deviceId if needed.
-        // Actually the backend just emits sensorData which has farm (ObjectId).
-        const farmId = latestData.farm;
-        setFarms(prev => prev.map(f => {
-          if (f.id === farmId && latestData) {
-            return {
-              ...f,
-              metrics: {
-                ...f.metrics,
-                temperature: latestData.temperature,
-                moisture: latestData.soilMoisture,
-                pH: latestData.ph,
-                ec: latestData.ec,
-                waterLevel: latestData.waterTank,
-                pumpStatus: latestData.relay?.pump ? 'ON' : 'OFF',
-                valveStatus: latestData.relay?.fertilizer ? 'Open' : 'Closed',
-                stirrerStatus: latestData.relay?.stirrer ? 'ON' : 'OFF',
-                flushStatus: latestData.relay?.flush ? 'Open' : 'Closed',
-                batteryLevel: f.metrics.batteryLevel,
-              }
-            };
-          }
-          return f;
-        }));
-      });
+    socket.on('sensor_update', (latestData: any) => {
+      const farmId = latestData.farm;
+      setFarms(prev => prev.map(f => {
+        if (f.id === farmId && latestData) {
+          return {
+            ...f,
+            metrics: {
+              ...f.metrics,
+              temperature: latestData.temperature,
+              moisture: latestData.soilMoisture,
+              pH: latestData.ph,
+              ec: latestData.ec,
+              waterLevel: latestData.waterTank,
+              pumpStatus: latestData.relay?.pump ? 'ON' : 'OFF',
+              valveStatus: latestData.relay?.fertilizer ? 'Open' : 'Closed',
+              stirrerStatus: latestData.relay?.stirrer ? 'ON' : 'OFF',
+              flushStatus: latestData.relay?.flush ? 'Open' : 'Closed',
+              batteryLevel: f.metrics.batteryLevel,
+            }
+          };
+        }
+        return f;
+      }));
+    });
 
-      return () => {
-        socket.off('sensor_update');
-      };
-    }
-  }, [isAuthenticated]);
+    return () => {
+      socket.off('sensor_update');
+    };
+  }, []);
 
   const activeFarm = farms.find(f => f.id === activeFarmId) || null;
 

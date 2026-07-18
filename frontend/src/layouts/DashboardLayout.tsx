@@ -26,7 +26,6 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { useAuth } from '@/context/AuthContext';
 import { useFarm } from '@/context/FarmContext';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -58,7 +57,6 @@ export default function DashboardLayout() {
   
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
   const { farms, activeFarm, setActiveFarmId } = useFarm();
 
   const { theme, setTheme } = useTheme();
@@ -86,8 +84,7 @@ export default function DashboardLayout() {
   }, []);
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (

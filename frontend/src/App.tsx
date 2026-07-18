@@ -10,7 +10,6 @@ import Charts from "./pages/dashboard/Charts";
 import Alerts from "./pages/dashboard/Alerts";
 import Settings from "./pages/dashboard/Settings";
 import Profile from "./pages/dashboard/Profile";
-import Login from "./pages/Login";
 
 // New Pages
 import AddFarm from "./pages/dashboard/AddFarm";
@@ -23,50 +22,17 @@ import ManualControl from "./pages/dashboard/ManualControl";
 import DeviceManagement from "./pages/dashboard/DeviceManagement";
 import HelpSupport from "./pages/dashboard/HelpSupport";
 
-import { AuthProvider, useAuth } from "./context/AuthContext";
 import { FarmProvider } from "./context/FarmContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { SocketProvider } from "./context/SocketContext";
 import { Toaster } from 'react-hot-toast';
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
-};
-
-const AuthRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  return <>{children}</>;
-};
 
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       
-      <Route 
-        path="/login" 
-        element={
-          <AuthRoute>
-            <Login />
-          </AuthRoute>
-        } 
-      />
-
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <DashboardLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<Overview />} />
         <Route path="my-farms" element={<MyFarms />} />
         <Route path="add-farm" element={<AddFarm />} />
@@ -95,16 +61,14 @@ function AppRoutes() {
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <FarmProvider>
-          <SocketProvider>
-            <BrowserRouter>
-              <AppRoutes />
-              <Toaster position="bottom-right" />
-            </BrowserRouter>
-          </SocketProvider>
-        </FarmProvider>
-      </AuthProvider>
+      <FarmProvider>
+        <SocketProvider>
+          <BrowserRouter>
+            <AppRoutes />
+            <Toaster position="bottom-right" />
+          </BrowserRouter>
+        </SocketProvider>
+      </FarmProvider>
     </ThemeProvider>
   );
 }

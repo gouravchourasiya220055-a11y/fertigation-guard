@@ -2,10 +2,9 @@ import { User } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useAuth } from '@/context/AuthContext';
-
+import { useNavigate } from 'react-router-dom';
 export default function Profile() {
-  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -47,7 +46,7 @@ export default function Profile() {
             
             <div className="pt-4 border-t border-border flex gap-4">
               <Button variant="primary">Save Profile</Button>
-              <Button variant="destructive" onClick={logout}>Sign Out</Button>
+              <Button variant="destructive" onClick={() => navigate('/')}>Sign Out</Button>
             </div>
           </div>
         </div>
