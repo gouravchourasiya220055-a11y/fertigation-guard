@@ -11,50 +11,50 @@ export default function HelpSupport() {
   return (
     <div className="space-y-6">
       <div className="text-center py-8">
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-4">How can we help you today?</h1>
+        <h1 className="text-3xl font-extrabold text-[#1B4332] mb-4">How can we help you today?</h1>
         <div className="max-w-xl mx-auto relative">
           <input 
             type="text" 
             placeholder="Search for answers..."
-            className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white border border-[#DDE7D9] focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/25 focus:border-[#2E7D32] shadow-sm text-[#1B4332] font-semibold"
           />
-          <HelpCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <HelpCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5E6E64]" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <GlassCard className="p-6 text-center hover:bg-white/60 dark:hover:bg-slate-800/60 cursor-pointer transition-colors">
-          <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="p-6 text-center bg-white border border-[#DDE7D9] border-t-4 border-t-[#2E7D32] rounded-2xl shadow-sm hover:bg-[#EAF7EA]/30 cursor-pointer transition-all">
+          <div className="w-12 h-12 bg-[#EAF7EA] text-[#2E7D32] rounded-2xl border border-emerald-200/50 flex items-center justify-center mx-auto mb-4">
             <Book className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-800 dark:text-white mb-2">Documentation</h3>
-          <p className="text-sm text-slate-500">Read guides and tutorials</p>
-        </GlassCard>
+          <h3 className="font-bold text-[#1B4332] mb-2">Documentation</h3>
+          <p className="text-sm text-[#5E6E64] font-semibold">Read guides and tutorials</p>
+        </div>
 
-        <GlassCard className="p-6 text-center hover:bg-white/60 dark:hover:bg-slate-800/60 cursor-pointer transition-colors">
-          <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="p-6 text-center bg-[#EAF7EA] border border-[#DDE7D9] rounded-2xl shadow-sm hover:bg-[#EAF7EA]/50 cursor-pointer transition-all">
+          <div className="w-12 h-12 bg-[#F0F7FF] text-[#2563EB] rounded-2xl border border-blue-200/50 flex items-center justify-center mx-auto mb-4">
             <MessageCircle className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-800 dark:text-white mb-2">Community Forum</h3>
-          <p className="text-sm text-slate-500">Connect with other farmers</p>
-        </GlassCard>
+          <h3 className="font-bold text-[#1B4332] mb-2">Community Forum</h3>
+          <p className="text-sm text-[#5E6E64] font-semibold">Connect with other farmers</p>
+        </div>
 
-        <GlassCard className="p-6 text-center hover:bg-white/60 dark:hover:bg-slate-800/60 cursor-pointer transition-colors">
-          <div className="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="p-6 text-center bg-[#FFF9F2] border border-[#DDE7D9] rounded-2xl shadow-sm hover:bg-[#FFF9F2]/50 cursor-pointer transition-all">
+          <div className="w-12 h-12 bg-[#EAF7EA] text-[#2E7D32] rounded-2xl border border-emerald-200/50 flex items-center justify-center mx-auto mb-4">
             <Phone className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-800 dark:text-white mb-2">Contact Agronomist</h3>
-          <p className="text-sm text-slate-500">Get expert advice</p>
-        </GlassCard>
+          <h3 className="font-bold text-[#1B4332] mb-2">Contact Agronomist</h3>
+          <p className="text-sm text-[#5E6E64] font-semibold">Get expert advice</p>
+        </div>
       </div>
 
-      <GlassCard className="p-8 mt-8">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">Frequently Asked Questions</h2>
+      <GlassCard className="p-8 mt-8 border-[#DDE7D9]">
+        <h2 className="text-xl font-bold text-[#1B4332] mb-6">Frequently Asked Questions</h2>
         <div className="space-y-6">
           {faqs.map((faq, i) => (
-            <div key={i} className="border-b border-slate-200 dark:border-slate-800 pb-4 last:border-0 last:pb-0">
-              <h4 className="font-semibold text-slate-800 dark:text-white mb-2">{faq.q}</h4>
-              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{faq.a}</p>
+            <div key={i} className="border-b border-[#DDE7D9] pb-4 last:border-0 last:pb-0">
+              <h4 className="font-bold text-[#1B4332] mb-2">{faq.q}</h4>
+              <p className="text-[#5E6E64] text-sm leading-relaxed font-medium">{faq.a}</p>
             </div>
           ))}
         </div>

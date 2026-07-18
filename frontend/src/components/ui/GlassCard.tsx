@@ -21,7 +21,7 @@ export const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
       default: "glass rounded-2xl",
       panel: "glass-panel rounded-3xl",
       heavy:
-        "bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/40 dark:border-slate-700/50 rounded-2xl shadow-2xl",
+        "bg-white dark:bg-[#131A15] border border-slate-200 dark:border-[#232D26] rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300",
     };
 
     return (

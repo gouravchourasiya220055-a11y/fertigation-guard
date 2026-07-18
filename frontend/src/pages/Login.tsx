@@ -28,11 +28,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#F8FAF5] via-[#F3F8EF] to-[#EEF6E8] dark:from-[#0B0F0C] dark:to-[#070A08] flex items-center justify-center p-4">
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-500/20 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-500/20 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-200/20 dark:bg-emerald-950/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-amber-200/20 dark:bg-amber-950/10 blur-[120px]" />
       </div>
 
       <motion.div 
@@ -42,18 +42,18 @@ export default function Login() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-emerald-400 flex items-center justify-center shadow-xl shadow-primary/30 mb-6">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/20 mb-6">
             <Sprout className="text-white w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-950 to-emerald-800 dark:from-white dark:to-emerald-300">
             Welcome Back
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">
+          <p className="text-emerald-900/60 dark:text-emerald-300/60 mt-2 font-medium">
             Sign in to your Fertigation Guard account
           </p>
         </div>
 
-        <GlassCard variant="panel" className="p-8 border-white/20">
+        <GlassCard className="p-8 border-slate-200 dark:border-[#232D26] shadow-xl">
           <form onSubmit={handleLogin} className="space-y-6" noValidate>
             <div className="space-y-4">
               <Input

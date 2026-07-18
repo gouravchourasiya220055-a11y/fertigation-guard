@@ -25,7 +25,6 @@ import {
   User,
   ChevronDown
 } from 'lucide-react';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { useAuth } from '@/context/AuthContext';
 import { useFarm } from '@/context/FarmContext';
 
@@ -49,7 +48,7 @@ const navItems = [
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isFarmSelectorOpen, setIsFarmSelectorOpen] = useState(false);
   
@@ -96,7 +95,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden bg-slate-50 dark:bg-transparent">
+    <div className="min-h-screen flex overflow-hidden bg-[#F7FAF4]">
       
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
@@ -121,12 +120,12 @@ export default function DashboardLayout() {
             transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
             className="w-72 h-screen p-4 flex flex-col z-30 fixed md:relative shrink-0"
           >
-            <GlassCard variant="panel" className="flex-1 flex flex-col overflow-hidden border-white/20">
+            <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#2E7D32] to-[#1B5E20] border-none shadow-xl rounded-3xl">
               <div className="p-6 flex flex-col gap-1 items-center justify-center border-b border-white/10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30 mb-2">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shadow-inner mb-2">
                   <Sprout className="text-white w-8 h-8" />
                 </div>
-                <h1 className="text-xl font-bold text-slate-800 dark:text-white text-center">
+                <h1 className="text-xl font-bold text-white text-center">
                   Fertigation Guard
                 </h1>
               </div>
@@ -139,18 +138,18 @@ export default function DashboardLayout() {
                       key={item.path}
                       to={item.path}
                       className={({ isActive }) => `
-                        flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
+                        flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative text-sm font-bold
                         ${isActive 
-                          ? 'bg-primary/20 text-primary font-semibold shadow-inner' 
-                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'}
+                          ? 'bg-white/20 text-white shadow-sm' 
+                          : 'text-emerald-100/80 hover:bg-white/10 hover:text-white'}
                       `}
                     >
-                      <item.icon className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-primary' : ''}`} />
+                      <item.icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-emerald-100/70 group-hover:text-white'}`} />
                       {item.label}
                       {isActive && (
                         <motion.div 
                           layoutId="activeIndicator"
-                          className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
+                          className="absolute left-1 w-1.5 h-5 bg-[#EAF7EA] rounded-full"
                         />
                       )}
                     </NavLink>
@@ -158,16 +157,16 @@ export default function DashboardLayout() {
                 })}
               </nav>
 
-              <div className="p-4 mt-auto border-t border-slate-200/50 dark:border-white/10">
+              <div className="p-4 mt-auto border-t border-white/10">
                 <button 
                   onClick={handleLogout}
-                  className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-500 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-emerald-100/80 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
                 >
                   <LogOut className="w-5 h-5" />
-                  <span className="font-medium">Logout</span>
+                  <span className="font-bold">Logout</span>
                 </button>
               </div>
-            </GlassCard>
+            </div>
           </motion.aside>
         )}
       </AnimatePresence>
@@ -186,24 +185,24 @@ export default function DashboardLayout() {
             </button>
             
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <Sprout className="w-5 h-5 text-primary" />
+              <h1 className="text-xl font-extrabold text-[#1B5E20] flex items-center gap-2">
+                <Sprout className="w-5 h-5 text-[#2E7D32]" />
                 Fertigation Guard
               </h1>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">AI Powered Smart Irrigation & Fertigation Platform</p>
+              <p className="text-xs font-bold text-[#5E6E64]">AI Powered Smart Irrigation & Fertigation Platform</p>
             </div>
             
             {/* Farm Selector */}
             <div className="relative ml-4" ref={farmSelectorRef}>
               <div 
                 onClick={() => setIsFarmSelectorOpen(!isFarmSelectorOpen)}
-                className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 backdrop-blur-md cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors shadow-sm"
+                className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white border border-[#DDE7D9] cursor-pointer hover:bg-[#EAF7EA]/30 transition-all duration-200 shadow-sm"
               >
                 <div className="flex flex-col">
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Select Farm</span>
-                  <span className="text-sm font-bold text-slate-800 dark:text-white">{activeFarm.name}</span>
+                  <span className="text-[10px] text-[#5E6E64] font-bold uppercase tracking-wider">Select Farm</span>
+                  <span className="text-sm font-bold text-[#1B5E20]">{activeFarm.name}</span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isFarmSelectorOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-[#2E7D32] transition-transform ${isFarmSelectorOpen ? 'rotate-180' : ''}`} />
               </div>
 
               <AnimatePresence>
@@ -212,7 +211,7 @@ export default function DashboardLayout() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden z-50 max-h-96 overflow-y-auto custom-scrollbar"
+                    className="absolute top-full left-0 mt-2 w-64 rounded-2xl bg-white border border-[#DDE7D9] shadow-xl overflow-hidden z-50 max-h-96 overflow-y-auto custom-scrollbar"
                   >
                     {farms.map((farm) => (
                       <div 
@@ -221,12 +220,12 @@ export default function DashboardLayout() {
                           setActiveFarmId(farm.id);
                           setIsFarmSelectorOpen(false);
                         }}
-                        className={`p-3 border-b border-slate-100 dark:border-white/5 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 ${activeFarm.id === farm.id ? 'bg-primary/5 dark:bg-primary/10' : ''}`}
+                        className={`p-3.5 border-b border-[#DDE7D9] cursor-pointer transition-all duration-150 hover:bg-[#EAF7EA]/30 ${activeFarm.id === farm.id ? 'bg-[#EAF7EA] text-[#1B5E20]' : 'text-[#1B4332]'}`}
                       >
-                        <div className="font-semibold text-sm text-slate-800 dark:text-white">{farm.name}</div>
+                        <div className="font-bold text-sm">{farm.name}</div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">{farm.cropType}</span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">{farm.area} Acres</span>
+                          <span className="text-[10px] font-bold bg-[#2E7D32] text-white px-2 py-0.5 rounded-full">{farm.cropType}</span>
+                          <span className="text-xs text-[#5E6E64] font-semibold">{farm.area} Acres</span>
                         </div>
                       </div>
                     ))}
@@ -235,9 +234,9 @@ export default function DashboardLayout() {
                         navigate('/dashboard/add-farm');
                         setIsFarmSelectorOpen(false);
                       }}
-                      className="p-3 bg-slate-50 dark:bg-slate-900/50 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 text-center transition-colors"
+                      className="p-3 bg-[#EEF6EC] cursor-pointer hover:bg-[#EAF7EA]/50 text-center transition-colors border-t border-[#DDE7D9]"
                     >
-                      <span className="text-sm font-medium text-primary flex items-center justify-center gap-2">
+                      <span className="text-sm font-bold text-[#2E7D32] flex items-center justify-center gap-2">
                         + Add Custom Farm
                       </span>
                     </div>
@@ -250,7 +249,7 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsDark(!isDark)}
-              className="p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm group"
+              className="p-3 rounded-xl bg-white hover:bg-[#EAF7EA]/30 transition-all border border-[#DDE7D9] shadow-sm group text-[#2E7D32] cursor-pointer"
             >
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -260,20 +259,20 @@ export default function DashboardLayout() {
                   exit={{ y: 20, opacity: 0, rotate: 90 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {isDark ? <Moon className="w-5 h-5 text-slate-300 group-hover:text-white" /> : <Sun className="w-5 h-5 text-orange-400" />}
+                  {isDark ? <Moon className="w-5 h-5 text-[#5E6E64]" /> : <Sun className="w-5 h-5 text-[#F59E0B]" />}
                 </motion.div>
               </AnimatePresence>
             </button>
 
-            <button className="relative p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm">
-              <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full" />
+            <button className="relative p-3 rounded-xl bg-white hover:bg-[#EAF7EA]/30 transition-all border border-[#DDE7D9] shadow-sm text-[#2E7D32] cursor-pointer">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-[#DC2626] border-2 border-white rounded-full" />
             </button>
 
             <div className="relative" ref={profileRef}>
               <div 
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="h-12 w-12 rounded-xl bg-gradient-to-tr from-emerald-400 to-accent p-0.5 shadow-md shadow-emerald-500/20 cursor-pointer overflow-hidden transition-transform hover:scale-105"
+                className="h-12 w-12 rounded-xl bg-gradient-to-tr from-primary to-accent p-0.5 shadow-md shadow-primary/20 cursor-pointer overflow-hidden transition-transform hover:scale-105"
               >
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer" alt="Profile" className="w-full h-full bg-slate-100 dark:bg-slate-800 rounded-[10px]" />
               </div>
@@ -285,29 +284,29 @@ export default function DashboardLayout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden z-50"
+                    className="absolute right-0 mt-2 w-48 origin-top-right rounded-2xl bg-white border border-[#DDE7D9] shadow-xl overflow-hidden z-50"
                   >
                     <div className="py-1">
                       <button 
                         onClick={() => navigate('/dashboard/profile')}
-                        className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                        className="flex w-full items-center px-4 py-2 text-sm text-[#1B4332] hover:bg-[#EAF7EA]/40 transition-colors cursor-pointer"
                       >
-                        <User className="mr-3 h-4 w-4 text-slate-400" />
+                        <User className="mr-3 h-4 w-4 text-[#5E6E64]" />
                         Profile
                       </button>
                       <button 
                         onClick={() => navigate('/dashboard/settings')}
-                        className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                        className="flex w-full items-center px-4 py-2 text-sm text-[#1B4332] hover:bg-[#EAF7EA]/40 transition-colors cursor-pointer"
                       >
-                        <Settings2 className="mr-3 h-4 w-4 text-slate-400" />
+                        <Settings2 className="mr-3 h-4 w-4 text-[#5E6E64]" />
                         Settings
                       </button>
-                      <div className="my-1 border-t border-slate-200 dark:border-white/10" />
+                      <div className="my-1 border-t border-[#DDE7D9]" />
                       <button 
                         onClick={handleLogout}
-                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        className="flex w-full items-center px-4 py-2 text-sm text-[#DC2626] hover:bg-red-50 transition-colors cursor-pointer"
                       >
-                        <LogOut className="mr-3 h-4 w-4 text-red-500" />
+                        <LogOut className="mr-3 h-4 w-4 text-[#DC2626]" />
                         Logout
                       </button>
                     </div>

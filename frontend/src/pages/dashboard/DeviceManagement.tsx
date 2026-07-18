@@ -17,13 +17,13 @@ export default function DeviceManagement() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <Router className="w-6 h-6 text-primary" />
+          <h1 className="text-2xl font-extrabold text-[#1B4332] flex items-center gap-2">
+            <Router className="w-6 h-6 text-[#2E7D32]" />
             Device Management
           </h1>
-          <p className="text-slate-500 dark:text-slate-400">Hardware fleet status for {activeFarm.name}</p>
+          <p className="text-[#5E6E64] text-sm font-semibold">Hardware fleet status for {activeFarm.name}</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold cursor-pointer">
           <Wifi className="w-4 h-4" />
           Scan for Devices
         </Button>
@@ -31,42 +31,42 @@ export default function DeviceManagement() {
 
       <div className="grid grid-cols-1 gap-4">
         {devices.map((device, idx) => (
-          <GlassCard key={idx} className="p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <GlassCard key={idx} className="p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-[#DDE7D9]">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-2xl ${device.status === 'Online' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+              <div className={`p-3 rounded-2xl border ${device.status === 'Online' ? 'bg-[#EAF7EA] text-[#2E7D32] border-emerald-200/50' : 'bg-[#FFF5F5] text-[#DC2626] border-red-200/50'}`}>
                 <device.icon className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white">{device.name}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{device.type}</p>
+                <h3 className="font-bold text-[#1B4332] text-lg">{device.name}</h3>
+                <p className="text-sm text-[#5E6E64] font-medium">{device.type}</p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 w-full md:w-auto mt-4 md:mt-0 bg-slate-50 dark:bg-slate-900/50 p-4 md:p-0 md:bg-transparent rounded-xl">
+            <div className="flex flex-wrap items-center gap-6 w-full md:w-auto mt-4 md:mt-0 bg-[#EEF6EC] p-4 md:p-0 md:bg-transparent rounded-xl">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${device.status === 'Online' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-rose-500'}`} />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{device.status}</span>
+                <div className={`w-2 h-2 rounded-full ${device.status === 'Online' ? 'bg-[#2E7D32]' : 'bg-[#DC2626]'}`} />
+                <span className="text-sm font-bold text-[#1B4332]">{device.status}</span>
               </div>
               
               <div className="flex items-center gap-2">
-                <Battery className={`w-4 h-4 ${device.battery > 20 ? 'text-emerald-500' : 'text-rose-500'}`} />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{device.battery}%</span>
+                <Battery className={`w-4 h-4 ${device.battery > 20 ? 'text-[#2E7D32]' : 'text-[#DC2626]'}`} />
+                <span className="text-sm font-bold text-[#1B4332]">{device.battery}%</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <Wifi className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{device.signal}</span>
+                <span className="text-sm font-bold text-[#1B4332]">{device.signal}</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded text-slate-600 dark:text-slate-400 font-mono">FW: {device.firmware}</span>
+                <span className="text-xs px-2 py-1 bg-white rounded text-[#5E6E64] font-bold font-mono border border-[#DDE7D9]">FW: {device.firmware}</span>
               </div>
 
               <div className="flex items-center gap-2 ml-auto md:ml-0">
-                <Button variant="outline" size="sm" onClick={() => alert('Device restart command sent.')}>
+                <Button variant="outline" size="sm" className="font-bold cursor-pointer" onClick={() => alert('Device restart command sent.')}>
                   Restart
                 </Button>
-                <Button variant="primary" size="sm" className="bg-primary hover:bg-primary/90" onClick={() => alert('Firmware is up to date.')}>
+                <Button variant="primary" size="sm" className="bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold cursor-pointer" onClick={() => alert('Firmware is up to date.')}>
                   Update
                 </Button>
               </div>

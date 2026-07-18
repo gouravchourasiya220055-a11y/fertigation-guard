@@ -7,30 +7,30 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl">
+        <div className="p-3 bg-[#EEF6EC] border border-[#DDE7D9] text-[#2E7D32] rounded-xl">
           <SettingsIcon className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Settings</h1>
+        <h1 className="text-2xl font-extrabold text-[#1B4332]">Settings</h1>
       </div>
 
-      <GlassCard className="p-8 border-white/20 space-y-6">
-        <h3 className="text-lg font-medium text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">
+      <GlassCard className="p-8 border-[#DDE7D9] space-y-6">
+        <h3 className="text-lg font-bold text-[#1B4332] border-b border-[#DDE7D9] pb-2">
           System Configuration
         </h3>
         <div className="max-w-md space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-bold text-[#1B4332] mb-1">
               Timezone
             </label>
-            <Input type="text" placeholder="UTC+00:00" defaultValue="UTC" />
+            <Input type="text" placeholder="UTC+00:00" defaultValue="UTC" className="bg-white border-[#DDE7D9] text-[#1B4332]" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-bold text-[#1B4332] mb-1">
               Data Update Interval (seconds)
             </label>
-            <Input type="number" placeholder="5" defaultValue="5" />
+            <Input type="number" placeholder="5" defaultValue="5" className="bg-white border-[#DDE7D9] text-[#1B4332]" />
           </div>
-          <Button variant="primary">Save Changes</Button>
+          <Button variant="primary" className="bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold cursor-pointer">Save Changes</Button>
         </div>
       </GlassCard>
     </div>

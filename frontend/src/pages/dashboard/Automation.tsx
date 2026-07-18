@@ -20,13 +20,13 @@ export default function Automation() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <Settings2 className="w-8 h-8 text-primary" />
+          <h2 className="text-3xl font-extrabold tracking-tight text-[#1B4332] flex items-center gap-2">
+            <Settings2 className="w-8 h-8 text-[#2E7D32]" />
             Automation Rules
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Configure logic for {activeFarm.name} ({activeFarm.cropType})</p>
+          <p className="text-[#5E6E64] mt-1 text-sm font-bold">Configure logic for {activeFarm.name} ({activeFarm.cropType})</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors shadow-lg shadow-primary/25">
+        <button className="flex items-center gap-2 px-4 py-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg cursor-pointer">
           <Plus className="w-5 h-5" />
           Create Rule
         </button>
@@ -37,19 +37,19 @@ export default function Automation() {
         {/* Rules List */}
         <div className="lg:col-span-2 space-y-4">
           {rules.map((rule) => (
-            <GlassCard key={rule.id} className={`p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 ${rule.active ? 'border-primary/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'opacity-75'}`}>
+            <div key={rule.id} className={`p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 bg-white border border-[#DDE7D9] rounded-2xl shadow-sm ${rule.active ? 'border-l-4 border-l-[#2E7D32]' : 'opacity-70'}`}>
               <div className="flex items-start sm:items-center gap-4">
-                <div className={`p-3 rounded-xl shrink-0 ${rule.active ? 'bg-primary/20 text-primary' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                <div className={`p-3 rounded-xl shrink-0 ${rule.active ? 'bg-[#EAF7EA] text-[#2E7D32]' : 'bg-[#EEF6EC] text-[#5E6E64]'}`}>
                   {rule.name.includes('Time') || rule.name.includes('Morning') ? <Clock className="w-6 h-6" /> : 
                    rule.name.includes('Temp') ? <Thermometer className="w-6 h-6" /> : 
                    <Droplets className="w-6 h-6" />}
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">{rule.name}</h3>
+                  <h3 className="font-bold text-[#1B4332] text-lg">{rule.name}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
-                    <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-300 font-mono">IF {rule.condition}</span>
-                    <span className="text-slate-400">→</span>
-                    <span className="px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md font-mono">THEN {rule.action}</span>
+                    <span className="px-2 py-1 bg-[#EEF6EC] rounded-md text-[#5E6E64] font-mono">IF {rule.condition}</span>
+                    <span className="text-[#DDE7D9]">→</span>
+                    <span className="px-2 py-1 bg-[#EAF7EA] text-[#2E7D32] rounded-md font-mono">THEN {rule.action}</span>
                   </div>
                 </div>
               </div>
@@ -57,52 +57,52 @@ export default function Automation() {
               <div className="flex items-center self-end sm:self-auto shrink-0">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={rule.active} onChange={() => toggleRule(rule.id)} />
-                  <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2E7D32]"></div>
                 </label>
               </div>
-            </GlassCard>
+            </div>
           ))}
         </div>
 
         {/* Global Settings */}
         <div className="space-y-6">
           <GlassCard className="p-6">
-            <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-500" />
+            <h3 className="font-bold text-[#1B4332] text-lg mb-4 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#2E7D32]" />
               Safety Limits
             </h3>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600 dark:text-slate-400">Max Water / Day</span>
-                  <span className="font-medium text-slate-900 dark:text-white">10,000 L</span>
+                  <span className="text-[#5E6E64] font-bold">Max Water / Day</span>
+                  <span className="font-extrabold text-[#1B4332]">10,000 L</span>
                 </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full">
+                <div className="w-full bg-[#EEF6EC] h-2 rounded-full">
                   <div className="bg-blue-500 h-2 rounded-full" style={{ width: '80%' }}></div>
                 </div>
               </div>
               
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600 dark:text-slate-400">Min Soil Moisture</span>
-                  <span className="font-medium text-slate-900 dark:text-white">25%</span>
+                  <span className="text-[#5E6E64] font-bold">Min Soil Moisture</span>
+                  <span className="font-extrabold text-[#1B4332]">25%</span>
                 </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full">
+                <div className="w-full bg-[#EEF6EC] h-2 rounded-full">
                   <div className="bg-amber-500 h-2 rounded-full" style={{ width: '25%' }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600 dark:text-slate-400">Max Pump Runtime</span>
-                  <span className="font-medium text-slate-900 dark:text-white">120 mins</span>
+                  <span className="text-[#5E6E64] font-bold">Max Pump Runtime</span>
+                  <span className="font-extrabold text-[#1B4332]">120 mins</span>
                 </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full">
-                  <div className="bg-rose-500 h-2 rounded-full" style={{ width: '50%' }}></div>
+                <div className="w-full bg-[#EEF6EC] h-2 rounded-full">
+                  <div className="bg-[#DC2626] h-2 rounded-full" style={{ width: '50%' }}></div>
                 </div>
               </div>
             </div>
-            <button className="w-full mt-6 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <button className="w-full mt-6 py-2 text-sm font-bold text-[#2E7D32] bg-[#EAF7EA] hover:bg-[#2E7D32] hover:text-white border border-transparent rounded-xl transition-all cursor-pointer">
               Edit Limits
             </button>
           </GlassCard>

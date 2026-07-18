@@ -27,65 +27,65 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
+    --background: #F7FAF4;
+    --foreground: #1B4332;
     
     --card: #ffffff;
-    --card-foreground: #0f172a;
+    --card-foreground: #1B4332;
     
     --popover: #ffffff;
-    --popover-foreground: #0f172a;
+    --popover-foreground: #1B4332;
     
-    --primary: #10b981;
+    --primary: #2E7D32; /* Primary Green */
     --primary-foreground: #ffffff;
     
-    --secondary: #22c55e;
-    --secondary-foreground: #ffffff;
+    --secondary: #EAF7EA; /* Light Green */
+    --secondary-foreground: #1B4332;
     
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    
-    --accent: #84cc16;
+    --accent: #F59E0B; /* Accent Orange */
     --accent-foreground: #ffffff;
     
-    --destructive: #ef4444;
-    --destructive-foreground: #f8fafc;
+    --muted: #EEF6EC; /* Secondary Background */
+    --muted-foreground: #5E6E64; /* Text Secondary */
+    
+    --destructive: #DC2626; /* Danger Red */
+    --destructive-foreground: #ffffff;
 
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: #10b981;
+    --border: #DDE7D9; /* Border color */
+    --input: #DDE7D9;
+    --ring: #2E7D32;
 
-    --radius: 1rem;
+    --radius: 1.0rem; /* 16px border radius */
   }
 
   .dark {
-    --background: #020617;
-    --foreground: #f8fafc;
+    --background: #F7FAF4;
+    --foreground: #1B4332;
     
-    --card: rgba(15, 23, 42, 0.4);
-    --card-foreground: #f8fafc;
+    --card: #ffffff;
+    --card-foreground: #1B4332;
     
-    --popover: #0f172a;
-    --popover-foreground: #f8fafc;
+    --popover: #ffffff;
+    --popover-foreground: #1B4332;
     
-    --primary: #10b981;
-    --primary-foreground: #020617;
+    --primary: #2E7D32;
+    --primary-foreground: #ffffff;
     
-    --secondary: #22c55e;
-    --secondary-foreground: #ffffff;
+    --secondary: #EAF7EA;
+    --secondary-foreground: #1B4332;
     
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    
-    --accent: #84cc16;
+    --accent: #F59E0B;
     --accent-foreground: #ffffff;
     
-    --destructive: #7f1d1d;
-    --destructive-foreground: #f8fafc;
+    --muted: #EEF6EC;
+    --muted-foreground: #5E6E64;
     
-    --border: rgba(255, 255, 255, 0.1);
-    --input: rgba(255, 255, 255, 0.1);
-    --ring: #10b981;
+    --destructive: #DC2626;
+    --destructive-foreground: #ffffff;
+    
+    --border: #DDE7D9;
+    --input: #DDE7D9;
+    --ring: #2E7D32;
   }
 }
 
@@ -96,22 +96,23 @@
   body {
     @apply text-foreground antialiased selection:bg-primary/20;
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Custom Background Gradient for Light/Dark mode */
-    background-color: #f8fafc;
+    /* Soft premium light background gradient */
+    background: linear-gradient(135deg, #F7FAF4 0%, #EEF6EC 100%);
+    background-attachment: fixed;
   }
   .dark body {
-    background: radial-gradient(circle at top left, #064e3b 0%, #020617 50%, #0f172a 100%);
+    background: linear-gradient(135deg, #F7FAF4 0%, #EEF6EC 100%);
     background-attachment: fixed;
   }
 }
 
-/* Glassmorphism Utilities */
+/* Premium Card Utilities */
 .glass {
-  @apply bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none;
+  @apply bg-white dark:bg-white border border-[#DDE7D9] dark:border-[#DDE7D9] rounded-2xl shadow-[0_2px_8px_rgba(46,125,50,0.03)] hover:shadow-[0_4px_16px_rgba(46,125,50,0.06)] hover:translate-y-[-1px] transition-all duration-300;
 }
 
 .glass-panel {
-  @apply bg-white/40 dark:bg-slate-800/30 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl;
+  @apply bg-white dark:bg-white border border-[#DDE7D9] dark:border-[#DDE7D9] rounded-3xl shadow-[0_4px_24px_rgba(46,125,50,0.02)] transition-all duration-300;
 }
 
 /* Custom Scrollbar */
@@ -123,8 +124,7 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+  @apply bg-emerald-200/60 dark:bg-emerald-800/40 rounded-full hover:bg-emerald-300/80 dark:hover:bg-emerald-700/60;
 }
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400 dark:bg-slate-600;
-}
+
+
