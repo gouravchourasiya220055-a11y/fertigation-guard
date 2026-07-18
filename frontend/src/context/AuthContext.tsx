@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../lib/api';
-import { socket } from '../lib/socket';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "../lib/api";
+import { socket } from "../lib/socket";
 
 interface User {
   id: string;
@@ -20,45 +20,66 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const res = await api.get('/auth/profile');
-          setUser(res.data.data);
-          setIsAuthenticated(true);
-          socket.connect();
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          localStorage.removeItem('token');
-        }
-      }
-      setIsLoading(false);
-    };
     checkAuth();
   }, []);
 
+  const checkAuth = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const res = await api.get("/auth/me");
+
+      setUser(res.data.data);
+      setIsAuthenticated(true);
+      socket.connect();
+    } catch (err) {
+      console.error("Auth check failed:", err);
+      localStorage.removeItem("token");
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+
+    setIsLoading(false);
+  };
+
   const login = (token: string, userData: User) => {
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
+
     setUser(userData);
     setIsAuthenticated(true);
+
     socket.connect();
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
+
     setUser(null);
     setIsAuthenticated(false);
+
     socket.disconnect();
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        isLoading,
+      }}
+    >
       {!isLoading && children}
     </AuthContext.Provider>
   );
@@ -66,8 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
   }
+
   return context;
 }
