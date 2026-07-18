@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -31,7 +30,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      
+
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<Overview />} />
         <Route path="my-farms" element={<MyFarms />} />
