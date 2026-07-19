@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -17,50 +17,79 @@ const SocketContext = createContext<SocketContextType>({
 
 export const useSocket = () => useContext(SocketContext);
 
-export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [liveSensorData, setLiveSensorData] = useState<any | null>(null);
-  const [liveRelayData, setLiveRelayData] = useState<any | null>(null);
+  const [liveSensorData, setLiveSensorData] = useState<any>(null);
+  const [liveRelayData, setLiveRelayData] = useState<any>(null);
 
   useEffect(() => {
-    // Assuming backend runs on the same host but port 5000 in dev
-    // In production, it might just be the same origin or read from env.
-   const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://fertigation-backend-gourav.onrender.com'
+    const backendUrl =
+      import.meta.env.VITE_API_URL?.replace("/api", "") ||
+      "https://fertigation-backend-gourav.onrender.com";
+
     const newSocket = io(backendUrl, {
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
+      transports: ["websocket", "polling"],
+      reconnection: true,
       reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
     });
 
     setSocket(newSocket);
 
-    newSocket.on('connect', () => {
-      console.log('Socket.IO connected');
+    newSocket.on("connect", () => {
+      console.log("✅ Socket Connected");
       setIsConnected(true);
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Socket.IO disconnected');
+    newSocket.on("disconnect", () => {
+      console.log("❌ Socket Disconnected");
       setIsConnected(false);
     });
 
-    newSocket.on('sensor_update', (data) => {
-      setLiveSensorData(data);
-    });
+    // LIVE TELEMETRY FROM BACKEND
+    newSocket.on("telemetry", (data) => {
+      console.log("📡 LIVE TELEMETRY:", data);
 
-    newSocket.on('relay_update', (data) => {
-      setLiveRelayData(data);
+      setLiveSensorData({
+        soilMoisture: data.soilMoisture,
+        ph: data.ph,
+        ec: data.tds,
+        tds: data.tds,
+        temperature: data.temperature,
+        humidity: data.humidity,
+        rssi: data.rssi ?? -70,
+      });
+
+      setLiveRelayData({
+        relay1: data.relay1,
+        relay2: data.relay2,
+        relay3: data.relay3,
+        relay4: data.relay4,
+        relay5: data.relay5,
+        relay6: data.relay6,
+      });
     });
 
     return () => {
-      newSocket.close();
+      newSocket.disconnect();
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected, liveSensorData, liveRelayData }}>
+    <SocketContext.Provider
+      value={{
+        socket,
+        isConnected,
+        liveSensorData,
+        liveRelayData,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );
 };
+
+export default SocketProvider;
