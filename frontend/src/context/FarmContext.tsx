@@ -84,7 +84,7 @@ export function FarmProvider({ children }: { children: ReactNode }) {
     try {
       const [farmsRes, liveRes] = await Promise.all([
         api.get('/farms'),
-        api.get('/live').catch(() => ({ data: { data: null } }))
+        api.get('/telemetry/latest').catch(() => ({ data: { data: null } }))
       ]);
       
       const backendFarms = farmsRes.data.data;
