@@ -1,7 +1,20 @@
-import { io, Socket } from 'socket.io-client';
+import { io } from "socket.io-client";
 
-const URL = import.meta.env.VITE_API_URL || 'https://fertigation-backend-gourav.onrender.com';
+const URL =
+  import.meta.env.VITE_API_URL?.replace("/api", "") ||
+  "https://fertigation-backend-gourav.onrender.com";
 
-export const socket: Socket = io(URL, {
-  autoConnect: false, // Connect manually, e.g., after login
+export const socket = io(URL, {
+  transports: ["websocket", "polling"],
+  autoConnect: true,
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+});
+
+socket.on("connect", () => {
+  console.log("Socket Connected:", socket.id);
+});
+
+socket.on("disconnect", (reason) => {
+  console.log("Socket Disconnected:", reason);
 });

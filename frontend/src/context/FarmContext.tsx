@@ -103,6 +103,7 @@ export function FarmProvider({ children }: { children: ReactNode }) {
             applyTelemetry(farmObj, latestData);
             farmObj.metrics.internetStatus = 'Online';
             lastTelemetryRef.current[f._id] = Date.now();
+            console.log("Latest Telemetry Loaded:", latestData);
           }
           return farmObj;
         });
@@ -131,6 +132,7 @@ export function FarmProvider({ children }: { children: ReactNode }) {
           updatedFarm.metrics = { ...f.metrics };
           updatedFarm.metrics.internetStatus = 'Online';
           applyTelemetry(updatedFarm, latestData);
+          console.log("Telemetry Received:", latestData);
           return updatedFarm;
         }
         return f;
