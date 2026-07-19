@@ -20,7 +20,7 @@
 
 // --- LoRa Configuration ---
 // Assuming standard generic SX1278 wiring for ESP32
-#define LORA_SS           18
+#define LORA_SS           05
 #define LORA_RST          14
 #define LORA_DIO0         26
 #define LORA_BAND         433E6 // Change to 868E6 or 915E6 based on your region

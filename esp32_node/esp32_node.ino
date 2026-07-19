@@ -113,9 +113,10 @@ void loop() {
     if (!isWaitingAck && (millis() - lastSensorReadTime >= SENSOR_READ_INTERVAL_MS)) {
         lastSensorReadTime = millis();
         
-        float ph = readpH();
-        float ec = readEC();
-        float soil = readSoilMoisture();
+       float ph = readpH();
+       float ec = readEC();
+       float tds = ec * 500;     // Approx conversion for testing
+       float soil = readSoilMoisture();
         
         JsonDocument doc;
         doc["msgId"] = currentMsgId;
@@ -123,6 +124,7 @@ void loop() {
         doc["deviceId"] = DEVICE_ID;
         doc["ph"] = ph;
         doc["ec"] = ec;
+        doc["tds"] = tds;
         doc["soilMoisture"] = soil;
         
         String jsonPayload;

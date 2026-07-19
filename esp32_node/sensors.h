@@ -5,6 +5,11 @@
 #include "config.h"
 
 void setupSensors() {
+
+    // ESP32 ADC Configuration
+    analogReadResolution(12);
+    analogSetAttenuation(ADC_11db);
+
     pinMode(PIN_PH_SENSOR, INPUT);
     pinMode(PIN_EC_SENSOR, INPUT);
     pinMode(PIN_SOIL_SENSOR, INPUT);

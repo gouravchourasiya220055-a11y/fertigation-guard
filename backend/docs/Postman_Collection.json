@@ -82,7 +82,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:5000",
+      "value": "https://fertigation-backend-gourav.onrender.com/api",
       "type": "string"
     }
   ]
