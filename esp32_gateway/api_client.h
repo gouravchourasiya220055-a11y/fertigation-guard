@@ -1,3 +1,7 @@
+/**
+ * @file api_client.h
+ * @brief Handles HTTP communication with the backend API.
+ */
 #ifndef API_CLIENT_H
 #define API_CLIENT_H
 
@@ -7,7 +11,7 @@
 #include <WiFi.h>
 
 
-void sendSensorData(const String &jsonData) {
+inline void sendSensorData(const String &jsonData) {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     String url = String(API_BASE_URL) + "/telemetry";
@@ -35,7 +39,7 @@ void sendSensorData(const String &jsonData) {
   }
 }
 
-String fetchRelayCommands() {
+inline String fetchRelayCommands() {
   String payload = "";
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;

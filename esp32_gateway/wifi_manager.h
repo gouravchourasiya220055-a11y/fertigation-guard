@@ -1,13 +1,17 @@
+/**
+ * @file wifi_manager.h
+ * @brief Handles WiFi connectivity for the ESP32 Gateway.
+ */
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
 #include <WiFi.h>
 #include "config.h"
 
-unsigned long lastWiFiCheck = 0;
+extern unsigned long lastWiFiCheck;
 const unsigned long WIFI_CHECK_INTERVAL = 10000; // Check every 10 seconds
 
-void setupWiFi() {
+inline void setupWiFi() {
     Serial.print("Connecting to WiFi: ");
     Serial.println(WIFI_SSID);
     
@@ -15,7 +19,7 @@ void setupWiFi() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 }
 
-void checkWiFi() {
+inline void checkWiFi() {
     if (millis() - lastWiFiCheck >= WIFI_CHECK_INTERVAL) {
         lastWiFiCheck = millis();
         if (WiFi.status() != WL_CONNECTED) {

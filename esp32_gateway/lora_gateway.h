@@ -1,60 +1,108 @@
+/**
+ * @file lora_gateway.h
+ * @brief LoRa communication handling for the ESP32 Gateway.
+ */
 #ifndef LORA_GATEWAY_H
 #define LORA_GATEWAY_H
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <LoRa.h>
 #include "config.h"
 
-// Communication stats
-unsigned long totalCmdPacketsSent = 0;
-unsigned long totalCmdPacketsFailed = 0;
+/**
+ * @brief Initializes the LoRa module with maximum reliability settings.
+ */
+inline void setupLoRa()
+{
+    Serial.println("Initializing LoRa...");
 
-void setupLoRa() {
-    Serial.println("Initializing LoRa on Gateway...");
     LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
-    
-    if (!LoRa.begin(LORA_BAND)) {
-        Serial.println("Starting LoRa failed!");
-        return;
+
+    if (!LoRa.begin(LORA_BAND))
+    {
+        Serial.println("LoRa Start Failed!");
+        while (1);
     }
-    
-    // Long Range Optimizations (must exactly match Node #1)
+
+    LoRa.setSPIFrequency(4000000);
     LoRa.enableCrc();
     LoRa.setTxPower(20);
     LoRa.setSpreadingFactor(9);
     LoRa.setSignalBandwidth(125E3);
-    
-    Serial.println("LoRa Initialization OK! (CRC enabled, SF9, 20dBm)");
+    LoRa.setCodingRate4(5);
+
+    LoRa.receive();
+
+    Serial.println("LoRa Ready");
 }
 
-String receiveLoRaPacket() {
-    String packet = "";
-    int packetSize = LoRa.parsePacket();
-    if (packetSize) {
-        while (LoRa.available()) {
-            packet += (char)LoRa.read();
-        }
-    }
-    return packet;
-}
-
-void sendLoRaPacketRaw(const String& data) {
+/**
+ * @brief Sends a packet over LoRa and returns to receive mode.
+ * @param payload The string payload to send.
+ * @return true if successful.
+ */
+inline bool sendPacket(String payload)
+{
+    LoRa.idle(); // Switch to standby before TX
     LoRa.beginPacket();
-    LoRa.print(data);
+    LoRa.print(payload);
     LoRa.endPacket();
+    LoRa.receive(); // Automatically return to receive mode
+    return true;
 }
 
-float getPacketLoss() {
-    if (totalCmdPacketsSent == 0) return 0.0;
-    return ((float)totalCmdPacketsFailed / (float)totalCmdPacketsSent) * 100.0;
+/**
+ * @brief Reads a LoRa packet safely, ignoring empty packets.
+ * @return The payload string, or empty string if no valid packet.
+ */
+inline String receivePacket()
+{
+    int packetSize = LoRa.parsePacket();
+    if (packetSize == 0) return "";
+    
+    String payload = "";
+    while (LoRa.available())
+    {
+        payload += (char)LoRa.read();
+    }
+    return payload;
 }
 
-void printCommStatus() {
-    Serial.println("=== Gateway Comm Status ===");
-    Serial.print("Total CMD Sent: "); Serial.println(totalCmdPacketsSent);
-    Serial.print("Failed CMDs:    "); Serial.println(totalCmdPacketsFailed);
-    Serial.print("Loss Rate:      "); Serial.print(getPacketLoss()); Serial.println("%");
-    Serial.println("===========================");
+/**
+ * @brief Gets the RSSI of the last received packet.
+ * @return RSSI in dBm.
+ */
+inline int getRSSI()
+{
+    return LoRa.packetRssi();
 }
 
-#endif // LORA_GATEWAY_H
+/**
+ * @brief Gets the SNR of the last received packet.
+ * @return SNR in dB.
+ */
+inline float getSNR()
+{
+    return LoRa.packetSnr();
+}
+
+/**
+ * @brief Legacy function to send a raw LoRa packet. Wraps sendPacket to prevent code duplication.
+ * @param data The string data to send.
+ */
+inline void sendLoRaPacketRaw(const String &data)
+{
+    sendPacket(data);
+}
+
+/**
+ * @brief Legacy function to receive a LoRa packet. Wraps receivePacket to prevent code duplication.
+ * @return The received packet string.
+ */
+inline String receiveLoRaPacket()
+{
+    return receivePacket();
+}
+
+#endif

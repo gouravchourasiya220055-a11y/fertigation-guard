@@ -1,155 +1,135 @@
-#include <ArduinoJson.h>
+/**
+ * @file esp32_gateway.ino
+ * @brief Main application entry point for the ESP32 Gateway.
+ */
 #include <Arduino.h>
-#include <WiFi.h>
-#include <HTTPClient.h>
+#include <SPI.h>
+#include <LoRa.h>
 #include "config.h"
-#include "wifi_manager.h"
 #include "lora_gateway.h"
 #include "api_client.h"
+#include "command_manager.h"
+#include "config_manager.h"
+#include "cloud_sync_manager.h"
+#include "health_manager.h"
+#include "ota_manager.h"
+#include "production_manager.h"
+#include "wifi_manager.h"
 
-unsigned long lastApiPullTime = 0;
-String lastRelayState = "";
-uint32_t currentMsgId = 1;
+// ------------------------------------------------
+// Global Variable Definitions
+// ------------------------------------------------
 
-// Outbound packet queue state (for Gateway -> Node CMDs)
-bool isWaitingAck = false;
-uint32_t pendingMsgId = 0;
-String pendingPayload = "";
-unsigned long lastSendTime = 0;
-int retryCount = 0;
+// command_manager.h
+GatewayCommand commandQueue[MAX_QUEUE_SIZE];
+int cmdQueueHead = 0;
+int cmdQueueTail = 0;
+int cmdQueueSize = 0;
+String lastCommandString = "";
+unsigned long lastCommandTime = 0;
+unsigned long lastFetchTime = 0;
+
+// cloud_sync_manager.h
+TelemetryPacket offlineQueue[MAX_OFFLINE_QUEUE];
+int offlineQueueHead = 0;
+int offlineQueueTail = 0;
+int offlineQueueSize = 0;
+unsigned long lastHeartbeatMs = 0;
+unsigned long lastNtpSyncMs = 0;
+bool isNetworkOnline = false;
+
+// wifi_manager.h
+unsigned long lastWiFiCheck = 0;
+
+// health_manager.h
+SystemHealth healthStatus;
+unsigned long lastHealthPrintMs = 0;
+
+// ota_manager.h
+OTAInfo otaData;
+unsigned long otaTimer = 0;
+
+// production_manager.h
+unsigned long loopStartTime = 0;
+unsigned long maxLoopTime = 0;
+unsigned long minLoopTime = 0xFFFFFFFF;
+unsigned long totalLoopTime = 0;
+unsigned long loopIterations = 0;
+uint32_t prodMinHeap = 0xFFFFFFFF;
+
+// system_logger.h
+LogEntry logBuffer[MAX_LOG_ENTRIES];
+int logHead = 0;
+int logCount = 0;
+
+// config_manager.h
+SystemConfig sysConfig;
+Preferences prefs;
+Preferences backupPrefs;
 
 void setup() {
-    Serial.begin(115200);
-    while (!Serial); // Wait for serial port
-    
-    Serial.println("\n--- ESP32 Gateway Controller Starting ---");
-    
-    setupWiFi();
-    setupLoRa();
+  Serial.begin(115200);
+  
+  // Non-blocking wait for serial
+  unsigned long bootStart = millis();
+  while(millis() - bootStart < 1000) {} 
+
+  Serial.println("================================");
+  Serial.println("      LoRa Gateway Test");
+  Serial.println("================================");
+
+  setupLogger();
+  setupConfigManager();
+  setupHealthManager();
+  setupOTA();
+  setupCloudSync();
+  setupLoRa();
+  setupCommandManager();
+  setupWiFi();
+  
+  runProductionSelfTest();
+  generateDiagnosticReport();
+
+  Serial.println("Waiting for packets & fetching commands...");
 }
 
 void loop() {
-    // 1. Maintain WiFi connection (Non-blocking)
-    checkWiFi();
-    
-    // 2. Process LoRa CMD Retries (Non-blocking)
-    if (isWaitingAck) {
-        if (millis() - lastSendTime >= LORA_ACK_TIMEOUT_MS) {
-            if (retryCount < LORA_MAX_RETRIES) {
-                Serial.print("Timeout waiting for ACK. Retrying CMD ");
-                Serial.print(pendingMsgId);
-                Serial.print(" (Attempt ");
-                Serial.print(retryCount + 1);
-                Serial.println(")...");
-                
-                sendLoRaPacketRaw(pendingPayload);
-                lastSendTime = millis();
-                retryCount++;
-            } else {
-                Serial.print("CMD Packet ");
-                Serial.print(pendingMsgId);
-                Serial.println(" failed after max retries. Dropped.");
-                
-                totalCmdPacketsFailed++;
-                isWaitingAck = false; // Give up
-                printCommStatus();
-            }
-        }
-    }
+  startLoopMonitor();
+  
+  // 1. Service Incoming Telemetry from Nodes
+  String packet = receiveLoRaPacket();
 
-    // 3. Receive incoming LoRa packets
-    String incomingPacket = receiveLoRaPacket();
-    if (incomingPacket.length() > 0) {
-        int rssi = LoRa.packetRssi();
-        Serial.print("Received packet (RSSI: ");
-        Serial.print(rssi);
-        Serial.print("): ");
-        Serial.println(incomingPacket);
-        
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, incomingPacket);
-        
-        if (!error) {
-            String type = doc["type"] | "UNKNOWN";
-            
-            // Handle ACK packets from Node
-            if (type == "ACK") {
-                uint32_t ackId = doc["ackId"];
-                if (isWaitingAck && ackId == pendingMsgId) {
-                    Serial.print("ACK received for CMD ");
-                    Serial.println(ackId);
-                    isWaitingAck = false; // Successfully delivered!
-                }
-            }
-            
-            // Handle DATA (Sensor) packets from Node
-            if (type == "DATA") {
-                uint32_t msgId = doc["msgId"];
-                
-                // Immediately send an ACK back
-                JsonDocument ackDoc;
-                ackDoc["type"] = "ACK";
-                ackDoc["ackId"] = msgId;
-                String ackStr;
-                serializeJson(ackDoc, ackStr);
-                sendLoRaPacketRaw(ackStr);
-                Serial.print("Sent ACK for DATA ");
-                Serial.println(msgId);
-                
-                // Inject RSSI into the JSON before forwarding
-                doc["rssi"] = rssi;
-                String dataWithRssi;
-                serializeJson(doc, dataWithRssi);
-                
-                // Forward sensor data to Node.js backend
-                Serial.println("Forwarding DATA to backend...");
-                sendSensorData(dataWithRssi);
-            }
-        } else {
-            Serial.print("Failed to parse incoming JSON: ");
-            Serial.println(error.c_str());
-        }
+  if (packet.length() > 0) {
+    if (DEBUG_MODE) {
+      Serial.println("--------------------------------");
+      Serial.print("Received: ");
+      Serial.println(packet);
+      Serial.print("Length: ");
+      Serial.println(packet.length());
+      Serial.print("RSSI: ");
+      Serial.println(LoRa.packetRssi());
+      Serial.print("SNR: ");
+      Serial.println(LoRa.packetSnr());
+      Serial.println("--------------------------------");
     }
     
-    // 4. Periodically pull relay commands from backend
-    if (!isWaitingAck && (millis() - lastApiPullTime >= API_PULL_INTERVAL_MS)) {
-        lastApiPullTime = millis();
-        
-        String currentRelayState = fetchRelayCommands();
-        if (currentRelayState.length() > 0) {
-            JsonDocument doc;
-            DeserializationError error = deserializeJson(doc, currentRelayState);
-            
-            if (!error) {
-                if (currentRelayState != lastRelayState) {
-                    Serial.println("New relay command from backend.");
-                    lastRelayState = currentRelayState;
-                    
-                    // Wrap the payload with protocol headers
-                    doc["msgId"] = currentMsgId;
-                    doc["type"] = "CMD";
-                    
-                    String cmdPayload;
-                    serializeJson(doc, cmdPayload);
-                    
-                    Serial.print("Sending CMD packet: ");
-                    Serial.println(cmdPayload);
-                    
-                    sendLoRaPacketRaw(cmdPayload);
-                    
-                    // Setup state for reliable transmission
-                    pendingMsgId = currentMsgId;
-                    pendingPayload = cmdPayload;
-                    isWaitingAck = true;
-                    lastSendTime = millis();
-                    retryCount = 0;
-                    
-                    totalCmdPacketsSent++;
-                    currentMsgId++;
-                }
-            } else {
-                Serial.println("Invalid JSON received from backend for relays.");
-            }
-        }
+    // Route telemetry packets to the Cloud Sync Manager
+    if (packet.startsWith("{")) {
+        uploadTelemetry(packet);
     }
+  }
+
+  // 2. Fetch and Route Commands from Backend API
+  updateCommandManager();
+  
+  // 3. Service Cloud Synchronization (Heartbeats, NTP, Offline Queue)
+  updateCloudSync();
+  
+  // 4. System Health Watchdog & Diagnostics
+  updateHealthManager();
+  
+  // 5. Over-The-Air Update Manager
+  updateOTA();
+
+  endLoopMonitor();
 }
