@@ -6,7 +6,7 @@ export interface Farm {
   id: string;
   name: string;
   cropType: string;
-  area: number; 
+  area: number;
   areaUnit?: string;
   totalPlants?: number;
   dailyWater?: number;
@@ -65,39 +65,46 @@ interface FarmContextType {
 const FarmContext = createContext<FarmContextType | undefined>(undefined);
 
 export function FarmProvider({ children }: { children: ReactNode }) {
-
   const [farms, setFarms] = useState<Farm[]>([]);
   const [activeFarmId, setActiveFarmId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  
+
   // Track last telemetry time per farm for offline detection
   const lastTelemetryRef = useRef<Record<string, number>>({});
 
-  // Fetch initial farms and live telemetry
-  useEffect(() => {
-    fetchFarmsAndLive();
-  }, []);
+  const applyTelemetry = (farmObj: Farm, telemetry: any) => {
+    farmObj.metrics.temperature = telemetry.temperature ?? farmObj.metrics.temperature;
+    farmObj.metrics.moisture = telemetry.soilMoisture ?? farmObj.metrics.moisture;
+    farmObj.metrics.pH = telemetry.ph ?? farmObj.metrics.pH;
+    farmObj.metrics.ec = telemetry.tds ?? farmObj.metrics.ec;
+    farmObj.metrics.waterLevel = telemetry.waterTank ?? farmObj.metrics.waterLevel;
+
+    if (telemetry.relay1 !== undefined) farmObj.metrics.pumpStatus = telemetry.relay1 ? 'ON' : 'OFF';
+    if (telemetry.relay2 !== undefined) farmObj.metrics.valveStatus = telemetry.relay2 ? 'Open' : 'Closed';
+    if (telemetry.relay3 !== undefined) farmObj.metrics.stirrerStatus = telemetry.relay3 ? 'ON' : 'OFF';
+    if (telemetry.relay4 !== undefined) farmObj.metrics.flushStatus = telemetry.relay4 ? 'Open' : 'Closed';
+  };
 
   const fetchFarmsAndLive = async () => {
     setIsLoading(true);
-
     try {
       const [farmsRes, liveRes] = await Promise.all([
         api.get('/farms'),
         api.get('/telemetry/latest').catch(() => ({ data: { data: null } }))
       ]);
-      
+
       const backendFarms = farmsRes.data.data;
       const latestData = liveRes.data?.data;
 
       if (backendFarms.length > 0) {
         const mappedFarms: Farm[] = backendFarms.map((f: any) => {
-           const farmObj = mapBackendFarmToUI(f);
-           if (latestData && (latestData.farm === f._id || latestData.deviceId === f.esp32DeviceId)) {
-             applyTelemetry(farmObj, latestData);
-             lastTelemetryRef.current[f._id] = Date.now();
-           }
-           return farmObj;
+          const farmObj = mapBackendFarmToUI(f);
+          if (latestData && (latestData.farm === f._id || latestData.deviceId === f.esp32DeviceId)) {
+            applyTelemetry(farmObj, latestData);
+            farmObj.metrics.internetStatus = 'Online';
+            lastTelemetryRef.current[f._id] = Date.now();
+          }
+          return farmObj;
         });
         setFarms(mappedFarms);
         setActiveFarmId(mappedFarms[0].id);
@@ -109,24 +116,14 @@ export function FarmProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const applyTelemetry = (farmObj: Farm, telemetry: any) => {
-    farmObj.metrics.temperature = telemetry.temperature ?? farmObj.metrics.temperature;
-    farmObj.metrics.moisture = telemetry.soilMoisture ?? farmObj.metrics.moisture;
-    farmObj.metrics.pH = telemetry.ph ?? farmObj.metrics.pH;
-    farmObj.metrics.ec = telemetry.tds ?? telemetry.ec ?? farmObj.metrics.ec;
-    farmObj.metrics.waterLevel = telemetry.waterTank ?? farmObj.metrics.waterLevel;
-    
-    if (telemetry.relay) {
-       farmObj.metrics.pumpStatus = telemetry.relay.pump ? 'ON' : 'OFF';
-       farmObj.metrics.valveStatus = telemetry.relay.fertilizer ? 'Open' : 'Closed';
-       farmObj.metrics.stirrerStatus = telemetry.relay.stirrer ? 'ON' : 'OFF';
-       farmObj.metrics.flushStatus = telemetry.relay.flush ? 'Open' : 'Closed';
-    }
-  };
+  // Fetch initial farms and live telemetry
+  useEffect(() => {
+    fetchFarmsAndLive();
+  }, []);
 
   // Socket.io telemetry listener
   useEffect(() => {
-    socket.on('telemetry', (latestData: any) => {
+    const handleTelemetry = (latestData: any) => {
       setFarms(prev => prev.map(f => {
         if (f.id === latestData.farm || f.deviceId === latestData.deviceId) {
           lastTelemetryRef.current[f.id] = Date.now();
@@ -138,10 +135,12 @@ export function FarmProvider({ children }: { children: ReactNode }) {
         }
         return f;
       }));
-    });
+    };
+
+    socket.on('telemetry', handleTelemetry);
 
     return () => {
-      socket.off('telemetry');
+      socket.off('telemetry', handleTelemetry);
     };
   }, []);
 
