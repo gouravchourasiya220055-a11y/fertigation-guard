@@ -82,17 +82,43 @@ export default function DeviceManagement() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 w-full md:w-auto mt-4 md:mt-0 bg-card p-4 md:p-0 md:bg-transparent rounded-xl">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-4 w-full md:w-auto mt-4 md:mt-0 bg-card p-4 md:p-0 md:bg-transparent rounded-xl flex-1 justify-end">
+                <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-md text-xs">
+                  <span className="text-muted-foreground">Firmware:</span>
+                  <span className="font-medium text-foreground">{device.firmwareVersion || 'v2.1'}</span>
+                </div>
+                
+                {device.battery !== undefined && (
+                  <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-md text-xs">
+                    <span className="text-muted-foreground">Battery:</span>
+                    <span className={`font-medium ${device.battery < 20 ? 'text-red-500' : 'text-emerald-500'}`}>{device.battery}%</span>
+                  </div>
+                )}
+                
+                {device.rssi !== undefined && (
+                  <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-md text-xs">
+                    <span className="text-muted-foreground">RSSI:</span>
+                    <span className="font-medium text-blue-500">{device.rssi} dBm</span>
+                  </div>
+                )}
+                
+                {device.snr !== undefined && (
+                  <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-md text-xs">
+                    <span className="text-muted-foreground">SNR:</span>
+                    <span className="font-medium text-cyan-500">{device.snr} dB</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 ml-4">
                   <div className={`w-2 h-2 rounded-full ${device.status === 'online' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-rose-500'}`} />
                   <span className="text-sm font-medium text-foreground capitalize">{device.status}</span>
                 </div>
                 
-                <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2 text-muted-foreground ml-4">
                   <span className="text-xs">Last seen: {new Date(device.lastSeen).toLocaleString()}</span>
                 </div>
 
-                <div className="flex items-center gap-2 ml-auto md:ml-0">
+                <div className="flex items-center gap-2 ml-4 md:ml-6">
                   <Button variant="outline" size="sm" onClick={() => toast('Restart command sent')}>
                     Restart
                   </Button>

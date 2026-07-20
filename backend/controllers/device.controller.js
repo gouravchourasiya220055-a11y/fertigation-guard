@@ -58,15 +58,39 @@ export const receiveSensorData = async (req, res, next) => {
 // @access  Public
 export const receiveStatus = async (req, res, next) => {
   try {
-    const { deviceId, status } = req.body;
+    const { deviceId, status, wifiRssi, battery, firmwareVersion, fwVersion } = req.body;
+    
+    let updateFields = {
+      status: status || 'online', 
+      lastSeen: Date.now()
+    };
+    
+    if (wifiRssi !== undefined) updateFields.wifiRssi = wifiRssi;
+    if (battery !== undefined) updateFields.battery = battery;
+    if (firmwareVersion) updateFields.firmwareVersion = firmwareVersion;
+    if (fwVersion) updateFields.firmwareVersion = fwVersion; // Fallback for gateway
+
     const device = await Device.findOneAndUpdate(
       { deviceId }, 
-      { status: status || 'online', lastSeen: Date.now() },
+      updateFields,
       { new: true }
     );
     
     if (device) {
-      getIO().to(device.farm.toString()).emit('device_status', { deviceId, status: device.status, lastSeen: device.lastSeen });
+      const payload = { 
+        deviceId, 
+        status: device.status, 
+        lastSeen: device.lastSeen,
+        wifiRssi: device.wifiRssi,
+        battery: device.battery,
+        firmwareVersion: device.firmwareVersion
+      };
+      
+      getIO().to(device.farm.toString()).emit('device_status', payload);
+      getIO().emit('device_status', payload); // Also global emit for dashboard
+      
+      // Also emit a specific 'heartbeat' event as requested
+      getIO().emit('heartbeat', payload);
     }
     
     res.status(200).json({ success: true, message: 'Status updated' });

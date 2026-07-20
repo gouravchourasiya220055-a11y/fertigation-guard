@@ -7,36 +7,56 @@ import { Activity, Wifi } from 'lucide-react';
 
 export default function LiveMonitoring() {
   const { activeFarm } = useFarm();
-  const { isConnected, liveSensorData } = useSocket();
+  const { isConnected, liveSensorData, liveRelayData } = useSocket();
   const [logs, setLogs] = useState<{time: string, msg: string, type: 'info' | 'warn' | 'success'}[]>([
     { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), msg: 'Live monitoring started.', type: 'info' }
   ]);
 
+  const [prevRelays, setPrevRelays] = useState<any>(null);
+
   useEffect(() => {
-    // Socket.IO event streams are now handled inside SocketContext globally.
-    // We just listen to changes in liveSensorData to populate logs locally.
     if (liveSensorData) {
       setLogs(prev => [
         {
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          msg: `Sensor update (pH: ${liveSensorData.ph}, EC: ${liveSensorData.ec})`,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          msg: `Telemetry Update | pH: ${Number(liveSensorData.ph).toFixed(1)} | EC: ${Number(liveSensorData.ec).toFixed(1)} | Flow: ${Number(liveSensorData.flowMixed).toFixed(1)} L/h`,
           type: 'info' as const
         },
         ...prev
-      ].slice(0, 50));
+      ].slice(0, 100));
     }
-  }, [liveSensorData]);
+  }, [liveSensorData?.timestamp]);
 
   useEffect(() => {
     setLogs(prev => [
       {
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        msg: `Gateway is now ${isConnected ? 'online' : 'offline'}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        msg: `Gateway Connection Status: ${isConnected ? 'ONLINE' : 'OFFLINE'}`,
         type: (isConnected ? 'success' : 'warn') as 'success' | 'warn'
       },
       ...prev
-    ].slice(0, 50));
+    ].slice(0, 100));
   }, [isConnected]);
+
+  useEffect(() => {
+    if (liveRelayData) {
+      if (prevRelays) {
+        Object.keys(liveRelayData).forEach(key => {
+          if (liveRelayData[key] !== prevRelays[key]) {
+            setLogs(prev => [
+              {
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                msg: `Relay Triggered: ${key} is now ${liveRelayData[key] ? 'ON' : 'OFF'}`,
+                type: (liveRelayData[key] ? 'success' : 'warn') as 'success' | 'warn'
+              },
+              ...prev
+            ].slice(0, 100));
+          }
+        });
+      }
+      setPrevRelays(liveRelayData);
+    }
+  }, [liveRelayData]);
 
   if (!activeFarm) return null;
 

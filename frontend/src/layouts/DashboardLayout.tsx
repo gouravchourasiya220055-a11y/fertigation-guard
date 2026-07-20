@@ -33,6 +33,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Map, label: 'My Farms', path: '/dashboard/my-farms' },
   { icon: Activity, label: 'Live Monitoring', path: '/dashboard/live-monitoring' },
+  { icon: Droplet, label: 'Flow Monitoring', path: '/dashboard/flow-monitoring' },
   { icon: Cpu, label: 'Automation', path: '/dashboard/automation' },
   { icon: Sprout, label: 'Plant Database', path: '/dashboard/plants' },
   { icon: CloudSun, label: 'Weather', path: '/dashboard/weather' },

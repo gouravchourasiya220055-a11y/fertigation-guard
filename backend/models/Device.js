@@ -35,7 +35,10 @@ const DeviceSchema = new mongoose.Schema(
       fertilizer: { type: Boolean, default: false },
       stirrer: { type: Boolean, default: false },
       flush: { type: Boolean, default: false },
-    }
+    },
+    wifiRssi: { type: Number },
+    battery: { type: Number },
+    firmwareVersion: { type: String }
   },
   {
     timestamps: true,

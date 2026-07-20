@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Droplets, Activity, Zap, Leaf, MapPin, TrendingUp, Thermometer, CloudRain } from 'lucide-react';
+import { Droplets, Activity, Zap, Leaf, MapPin, TrendingUp, Thermometer, CloudRain, Router } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis
 } from 'recharts';
@@ -12,7 +12,7 @@ import { useSocket } from '@/context/SocketContext';
 export default function Overview() {
   const { activeFarm, isLoading } = useFarm();
   const [chartData, setChartData] = useState<any[]>([]);
-  const { liveSensorData, isConnected } = useSocket();
+  const { liveSensorData, isConnected, liveRelayData } = useSocket();
 
   useEffect(() => {
     if (activeFarm?.id) {
@@ -34,20 +34,38 @@ export default function Overview() {
   }
 
   const { metrics, aiRecommendations, weather } = activeFarm;
+  const metricsAny = metrics as any;
 
-  // Use live data if available, fallback to farm metrics
-  const livePH = liveSensorData?.ph ?? metrics.pH;
-  const liveEC = liveSensorData?.ec ?? metrics.ec;
-  const tankLevelPercentage = liveSensorData?.waterTank ?? activeFarm.metrics.waterLevel ?? 75; 
+  const liveTemp = liveSensorData?.temperature ?? metricsAny.temperature ?? 28;
+  const liveHum = liveSensorData?.humidity ?? metricsAny.humidity ?? 60;
+  const liveSoil = liveSensorData?.soilMoisture ?? metricsAny.moisture ?? 40;
+  const livePH = liveSensorData?.ph ?? metricsAny.pH ?? 6.5;
+  const liveTDS = liveSensorData?.tds ?? metricsAny.ec ?? 1.2;
+  const liveBattery = liveSensorData?.battery ?? 80;
+  const liveRSSI = liveSensorData?.rssi ?? -70;
+  const liveSNR = liveSensorData?.snr ?? 8;
+  const systemState = liveSensorData?.systemState ?? 'STANDBY';
+  
+  const tankLevelPercentage = liveSensorData?.waterTank ?? metricsAny.waterLevel ?? 75; 
   const circleData = [{ name: 'Tank', value: tankLevelPercentage, fill: '#3b82f6' }];
 
+  const lastUpdate = liveSensorData?.timestamp ? new Date(liveSensorData.timestamp).toLocaleTimeString() : 'Waiting...';
+  const pumpStatus = liveRelayData?.waterPump ? 'Running' : 'Stopped';
+  const valveStatus = liveRelayData?.peristalticPump ? 'Open' : 'Closed';
+
   const kpis = [
-    { title: 'Total Plants', value: activeFarm.totalPlants?.toLocaleString() || '15,000', icon: Leaf, color: 'emerald' },
-    { title: 'Today\'s Water Needed', value: `${activeFarm.dailyWater || 3500} L`, icon: Droplets, color: 'blue' },
-    { title: 'Today\'s Fertilizer', value: `${activeFarm.nReq || 15} kg`, icon: Zap, color: 'amber' },
-    { title: 'Pump Runtime', value: `${activeFarm.pumpRuntimeHours || 3.5} hrs`, icon: Activity, color: 'emerald' },
-    { title: 'Average pH', value: Number(livePH).toFixed(2), icon: Activity, color: 'emerald' },
-    { title: 'Average EC', value: Number(liveEC).toFixed(2), icon: Activity, color: 'amber' },
+    { title: 'Temperature', value: `${Number(liveTemp).toFixed(1)}°C`, icon: Thermometer, color: 'amber' },
+    { title: 'Humidity', value: `${Number(liveHum).toFixed(1)}%`, icon: CloudRain, color: 'cyan' },
+    { title: 'Soil Moisture', value: `${Number(liveSoil).toFixed(1)}%`, icon: Droplets, color: 'blue' },
+    { title: 'pH Level', value: Number(livePH).toFixed(2), icon: Activity, color: 'emerald' },
+    { title: 'TDS (EC)', value: Number(liveTDS).toFixed(2), icon: Activity, color: 'emerald' },
+    { title: 'Battery', value: `${liveBattery}%`, icon: Zap, color: 'emerald' },
+    { title: 'WiFi RSSI', value: `${liveRSSI} dBm`, icon: Activity, color: 'blue' },
+    { title: 'LoRa SNR', value: `${liveSNR} dB`, icon: Activity, color: 'cyan' },
+    { title: 'Pump Status', value: pumpStatus, icon: Zap, color: liveRelayData?.waterPump ? 'emerald' : 'slate' },
+    { title: 'Valve Status', value: valveStatus, icon: Droplets, color: liveRelayData?.peristalticPump ? 'blue' : 'slate' },
+    { title: 'System Mode', value: (activeFarm as any).automationEnabled ? 'Auto' : 'Manual', icon: Activity, color: 'blue' },
+    { title: 'Irrigation State', value: systemState, icon: Leaf, color: 'emerald' },
   ];
 
   const getColorClasses = (color: string) => {
@@ -75,22 +93,35 @@ export default function Overview() {
             </span>
           </div>
           <p className="text-muted-foreground flex items-center gap-2">
-            <MapPin className="w-4 h-4" /> {activeFarm.location} • {activeFarm.area} {activeFarm.areaUnit || 'Acre'}
+            <MapPin className="w-4 h-4" /> {activeFarm.location} • Last Update: {lastUpdate}
           </p>
         </div>
         
-        <GlassCard className="px-6 py-3 border-emerald-500/30 bg-emerald-500/10">
-          <div className="flex flex-col items-end">
-            <div className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-2">
-              <Activity className="w-5 h-5" />
-              Health Score: {aiRecommendations?.healthScore || 100}/100
+        <div className="flex gap-4">
+          <GlassCard className="px-6 py-3 border-emerald-500/30 bg-emerald-500/10">
+            <div className="flex flex-col items-end">
+              <div className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                Node: {systemState}
+              </div>
+              <span className={`text-xs mt-1 font-semibold ${isConnected ? 'text-green-500 animate-pulse' : 'text-red-500'}`}>
+                {isConnected ? '● Connected' : '● Offline'}
+              </span>
             </div>
-            <span className="text-xs text-emerald-500/80">System {activeFarm.status}</span>
-            <span className={`text-xs mt-1 font-semibold ${isConnected ? 'text-green-500' : 'text-red-500'}`}>
-              {isConnected ? '● Gateway Connected' : '● Gateway Offline'}
-            </span>
-          </div>
-        </GlassCard>
+          </GlassCard>
+          
+          <GlassCard className="px-6 py-3 border-blue-500/30 bg-blue-500/10">
+            <div className="flex flex-col items-end">
+              <div className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-2">
+                <Router className="w-5 h-5" />
+                Gateway Status
+              </div>
+              <span className={`text-xs mt-1 font-semibold text-green-500 animate-pulse`}>
+                ● Online
+              </span>
+            </div>
+          </GlassCard>
+        </div>
       </div>
 
       {/* KPI Cards Grid */}
@@ -99,7 +130,7 @@ export default function Overview() {
           const colors = getColorClasses(kpi.color);
           return (
             <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}>
-              <GlassCard className="p-4 flex flex-col items-center justify-center text-center h-full hover:bg-muted transition-colors">
+              <GlassCard className={`p-4 flex flex-col items-center justify-center text-center h-full transition-all duration-300 ${colors.text.includes('slate') ? 'opacity-80' : 'hover:scale-105 border-' + kpi.color + '-500/30 bg-' + kpi.color + '-500/5'}`}>
                 <div className={`p-2 rounded-xl mb-3 ${colors.bg}`}>
                   <kpi.icon className={`w-5 h-5 ${colors.text}`} />
                 </div>

@@ -20,6 +20,7 @@ import Reports from "./pages/dashboard/Reports";
 import ManualControl from "./pages/dashboard/ManualControl";
 import DeviceManagement from "./pages/dashboard/DeviceManagement";
 import HelpSupport from "./pages/dashboard/HelpSupport";
+import FlowMonitoring from "./pages/dashboard/FlowMonitoring";
 
 import { FarmProvider } from "./context/FarmContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -36,6 +37,7 @@ function AppRoutes() {
         <Route path="my-farms" element={<MyFarms />} />
         <Route path="add-farm" element={<AddFarm />} />
         <Route path="live-monitoring" element={<LiveMonitoring />} />
+        <Route path="flow-monitoring" element={<FlowMonitoring />} />
         <Route path="automation" element={<Automation />} />
         <Route path="plants" element={<PlantDatabase />} />
         <Route path="weather" element={<Weather />} />

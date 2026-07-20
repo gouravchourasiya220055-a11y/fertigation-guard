@@ -15,10 +15,12 @@ export default function ManualControl() {
   if (!activeFarm) return null;
   
   // Bind to liveRelayData if available, fallback to metrics
-  const pumpOn = liveRelayData?.waterPump ?? (activeFarm.metrics.pumpStatus === 'ON');
-  const valveOpen = liveRelayData?.peristalticPump ?? (activeFarm.metrics.valveStatus === 'Open');
-  const mixerOn = liveRelayData?.stirrer ?? (activeFarm.metrics.stirrerStatus === 'ON');
-  const flushState = liveRelayData?.flushValve ?? (activeFarm.metrics.flushStatus === 'Open');
+  const r1On = liveRelayData?.waterPump ?? (activeFarm.metrics.pumpStatus === 'ON');
+  const r2On = liveRelayData?.peristalticPump ?? (activeFarm.metrics.valveStatus === 'Open');
+  const r3On = liveRelayData?.stirrer ?? (activeFarm.metrics.stirrerStatus === 'ON');
+  const r4On = liveRelayData?.highPressurePump ?? false;
+  const r5On = liveRelayData?.flushValve ?? (activeFarm.metrics.flushStatus === 'Open');
+  const r6On = liveRelayData?.relay6 ?? false;
 
   const sendCommand = async (relay: string, state: boolean) => {
     if (!activeFarm.deviceId) {
@@ -30,7 +32,8 @@ export default function ManualControl() {
     try {
       await api.post('/relays/control', {
         relay,
-        state
+        state,
+        deviceId: activeFarm.deviceId
       });
       toast.success(`${relay} turned ${state ? 'ON' : 'OFF'}`);
     } catch (error) {
@@ -53,10 +56,12 @@ export default function ManualControl() {
     setLoadingRelay('emergency');
     try {
       await Promise.all([
-        api.post('/relays/control', { relay: 'waterPump', state: false }),
-        api.post('/relays/control', { relay: 'peristalticPump', state: false }),
-        api.post('/relays/control', { relay: 'stirrer', state: false }),
-        api.post('/relays/control', { relay: 'flushValve', state: false }),
+        api.post('/relays/control', { relay: 'waterPump', state: false, deviceId: activeFarm.deviceId }),
+        api.post('/relays/control', { relay: 'peristalticPump', state: false, deviceId: activeFarm.deviceId }),
+        api.post('/relays/control', { relay: 'stirrer', state: false, deviceId: activeFarm.deviceId }),
+        api.post('/relays/control', { relay: 'highPressurePump', state: false, deviceId: activeFarm.deviceId }),
+        api.post('/relays/control', { relay: 'flushValve', state: false, deviceId: activeFarm.deviceId }),
+        api.post('/relays/control', { relay: 'relay6', state: false, deviceId: activeFarm.deviceId }),
       ]);
       toast.success('System halted');
     } catch (error) {
@@ -77,105 +82,116 @@ export default function ManualControl() {
           <p className="text-muted-foreground">Direct hardware control for {activeFarm.name}</p>
         </div>
         <div className="px-4 py-2 bg-red-500/10 text-red-500 rounded-xl text-sm font-bold flex items-center gap-2 border border-red-500/20">
-          <AlertTriangle className="w-4 h-4" />
+          <AlertTriangle className="w-4 h-4 animate-pulse" />
           MANUAL MODE
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Main Pump Control */}
-        <GlassCard className="p-6 flex flex-col items-center justify-center text-center space-y-6">
-          <div className="p-4 bg-muted rounded-full">
-            <Power className={`w-12 h-12 ${pumpOn ? 'text-primary' : 'text-slate-400'}`} />
+        
+        {/* Relay 1: Water Pump */}
+        <GlassCard className={`p-6 flex flex-col items-center justify-center text-center space-y-6 transition-all duration-300 ${r1On ? 'shadow-[0_0_20px_rgba(59,130,246,0.3)] border-blue-500/50 bg-blue-500/5' : ''}`}>
+          <div className={`p-4 rounded-full transition-colors ${r1On ? 'bg-blue-500/20' : 'bg-muted'}`}>
+            <Power className={`w-12 h-12 transition-colors ${r1On ? 'text-blue-500' : 'text-slate-400'}`} />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-foreground">Main Irrigation Pump</h3>
-            <p className="text-muted-foreground mt-1">Controls primary water flow</p>
+            <h3 className="text-xl font-bold text-foreground">Water Pump</h3>
+            <p className="text-muted-foreground mt-1">Relay 1 Status</p>
           </div>
-          <Button 
-            size="lg" 
-            variant={pumpOn ? 'primary' : 'outline'}
-            className={`w-full ${pumpOn ? 'bg-primary hover:bg-primary/90 text-white' : ''}`}
-            onClick={() => sendCommand('waterPump', !pumpOn)}
-            disabled={loadingRelay === 'waterPump' || loadingRelay === 'emergency'}
-          >
-            {loadingRelay === 'waterPump' ? 'Processing...' : pumpOn ? 'Turn OFF' : 'Turn ON'}
+          <Button size="lg" variant={r1On ? 'primary' : 'outline'} className={`w-full ${r1On ? 'bg-blue-500 hover:bg-blue-600 text-white border-blue-500' : ''}`}
+            onClick={() => sendCommand('waterPump', !r1On)} disabled={loadingRelay === 'waterPump' || loadingRelay === 'emergency'}>
+            {loadingRelay === 'waterPump' ? 'Processing...' : r1On ? 'Turn OFF' : 'Turn ON'}
           </Button>
         </GlassCard>
 
-        {/* Zone Valve Control */}
-        <GlassCard className="p-6 flex flex-col items-center justify-center text-center space-y-6">
-          <div className="p-4 bg-muted rounded-full">
-            <Droplets className={`w-12 h-12 ${valveOpen ? 'text-blue-500' : 'text-slate-400'}`} />
+        {/* Relay 2: Fertilizer Pump */}
+        <GlassCard className={`p-6 flex flex-col items-center justify-center text-center space-y-6 transition-all duration-300 ${r2On ? 'shadow-[0_0_20px_rgba(245,158,11,0.3)] border-amber-500/50 bg-amber-500/5' : ''}`}>
+          <div className={`p-4 rounded-full transition-colors ${r2On ? 'bg-amber-500/20' : 'bg-muted'}`}>
+            <Droplets className={`w-12 h-12 transition-colors ${r2On ? 'text-amber-500' : 'text-slate-400'}`} />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-foreground">Zone 1 Solenoid Valve</h3>
-            <p className="text-muted-foreground mt-1">Flow: {valveOpen ? '250 L/h' : '0 L/h'}</p>
+            <h3 className="text-xl font-bold text-foreground">Fertilizer Pump</h3>
+            <p className="text-muted-foreground mt-1">Relay 2 Status</p>
           </div>
-          <Button 
-            size="lg" 
-            variant={valveOpen ? 'primary' : 'outline'}
-            className={`w-full ${valveOpen ? 'bg-blue-500 hover:bg-blue-600 text-white border-blue-500' : ''}`}
-            onClick={() => sendCommand('peristalticPump', !valveOpen)}
-            disabled={loadingRelay === 'peristalticPump' || loadingRelay === 'emergency'}
-          >
-            {loadingRelay === 'peristalticPump' ? 'Processing...' : valveOpen ? 'Close Valve' : 'Open Valve'}
+          <Button size="lg" variant={r2On ? 'primary' : 'outline'} className={`w-full ${r2On ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : ''}`}
+            onClick={() => sendCommand('peristalticPump', !r2On)} disabled={loadingRelay === 'peristalticPump' || loadingRelay === 'emergency'}>
+            {loadingRelay === 'peristalticPump' ? 'Processing...' : r2On ? 'Turn OFF' : 'Turn ON'}
           </Button>
         </GlassCard>
 
-        {/* Fertilizer Mixer */}
-        <GlassCard className="p-6 flex flex-col items-center justify-center text-center space-y-6">
-          <div className="p-4 bg-muted rounded-full">
-            <Fan className={`w-12 h-12 ${mixerOn ? 'text-amber-500 animate-spin' : 'text-slate-400'}`} />
+        {/* Relay 3: Stirrer */}
+        <GlassCard className={`p-6 flex flex-col items-center justify-center text-center space-y-6 transition-all duration-300 ${r3On ? 'shadow-[0_0_20px_rgba(16,185,129,0.3)] border-emerald-500/50 bg-emerald-500/5' : ''}`}>
+          <div className={`p-4 rounded-full transition-colors ${r3On ? 'bg-emerald-500/20' : 'bg-muted'}`}>
+            <Fan className={`w-12 h-12 transition-colors ${r3On ? 'text-emerald-500 animate-spin' : 'text-slate-400'}`} />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-foreground">Fertilizer Mixer Motor</h3>
-            <p className="text-muted-foreground mt-1">Agitation tank status</p>
+            <h3 className="text-xl font-bold text-foreground">Mixer / Stirrer</h3>
+            <p className="text-muted-foreground mt-1">Relay 3 Status</p>
           </div>
-          <Button 
-            size="lg" 
-            variant={mixerOn ? 'primary' : 'outline'}
-            className={`w-full ${mixerOn ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : ''}`}
-            onClick={() => sendCommand('stirrer', !mixerOn)}
-            disabled={loadingRelay === 'stirrer' || loadingRelay === 'emergency'}
-          >
-            {loadingRelay === 'stirrer' ? 'Processing...' : mixerOn ? 'Stop Mixing' : 'Start Mixing'}
+          <Button size="lg" variant={r3On ? 'primary' : 'outline'} className={`w-full ${r3On ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500' : ''}`}
+            onClick={() => sendCommand('stirrer', !r3On)} disabled={loadingRelay === 'stirrer' || loadingRelay === 'emergency'}>
+            {loadingRelay === 'stirrer' ? 'Processing...' : r3On ? 'Turn OFF' : 'Turn ON'}
           </Button>
         </GlassCard>
 
-        {/* Flush Valve */}
-        <GlassCard className="p-6 flex flex-col items-center justify-center text-center space-y-6">
-          <div className="p-4 bg-muted rounded-full">
-            <Droplets className={`w-12 h-12 ${flushState ? 'text-indigo-500' : 'text-slate-400'}`} />
+        {/* Relay 4: Main Pump */}
+        <GlassCard className={`p-6 flex flex-col items-center justify-center text-center space-y-6 transition-all duration-300 ${r4On ? 'shadow-[0_0_20px_rgba(139,92,246,0.3)] border-purple-500/50 bg-purple-500/5' : ''}`}>
+          <div className={`p-4 rounded-full transition-colors ${r4On ? 'bg-purple-500/20' : 'bg-muted'}`}>
+            <Power className={`w-12 h-12 transition-colors ${r4On ? 'text-purple-500' : 'text-slate-400'}`} />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-foreground">Flush Valve</h3>
-            <p className="text-muted-foreground mt-1">System flushing status</p>
+            <h3 className="text-xl font-bold text-foreground">Main Pump</h3>
+            <p className="text-muted-foreground mt-1">Relay 4 Status</p>
           </div>
-          <Button 
-            size="lg" 
-            variant={flushState ? 'primary' : 'outline'}
-            className={`w-full ${flushState ? 'bg-indigo-500 hover:bg-indigo-600 text-white border-indigo-500' : ''}`}
-            onClick={() => sendCommand('flushValve', !flushState)}
-            disabled={loadingRelay === 'flushValve' || loadingRelay === 'emergency'}
-          >
-            {loadingRelay === 'flushValve' ? 'Processing...' : flushState ? 'Close Flush' : 'Open Flush'}
+          <Button size="lg" variant={r4On ? 'primary' : 'outline'} className={`w-full ${r4On ? 'bg-purple-500 hover:bg-purple-600 text-white border-purple-500' : ''}`}
+            onClick={() => sendCommand('highPressurePump', !r4On)} disabled={loadingRelay === 'highPressurePump' || loadingRelay === 'emergency'}>
+            {loadingRelay === 'highPressurePump' ? 'Processing...' : r4On ? 'Turn OFF' : 'Turn ON'}
+          </Button>
+        </GlassCard>
+
+        {/* Relay 5: Base Pump */}
+        <GlassCard className={`p-6 flex flex-col items-center justify-center text-center space-y-6 transition-all duration-300 ${r5On ? 'shadow-[0_0_20px_rgba(236,72,153,0.3)] border-pink-500/50 bg-pink-500/5' : ''}`}>
+          <div className={`p-4 rounded-full transition-colors ${r5On ? 'bg-pink-500/20' : 'bg-muted'}`}>
+            <Droplets className={`w-12 h-12 transition-colors ${r5On ? 'text-pink-500' : 'text-slate-400'}`} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-foreground">Base Pump</h3>
+            <p className="text-muted-foreground mt-1">Relay 5 Status</p>
+          </div>
+          <Button size="lg" variant={r5On ? 'primary' : 'outline'} className={`w-full ${r5On ? 'bg-pink-500 hover:bg-pink-600 text-white border-pink-500' : ''}`}
+            onClick={() => sendCommand('flushValve', !r5On)} disabled={loadingRelay === 'flushValve' || loadingRelay === 'emergency'}>
+            {loadingRelay === 'flushValve' ? 'Processing...' : r5On ? 'Turn OFF' : 'Turn ON'}
+          </Button>
+        </GlassCard>
+
+        {/* Relay 6: Drain Valve */}
+        <GlassCard className={`p-6 flex flex-col items-center justify-center text-center space-y-6 transition-all duration-300 ${r6On ? 'shadow-[0_0_20px_rgba(244,63,94,0.3)] border-rose-500/50 bg-rose-500/5' : ''}`}>
+          <div className={`p-4 rounded-full transition-colors ${r6On ? 'bg-rose-500/20' : 'bg-muted'}`}>
+            <Power className={`w-12 h-12 transition-colors ${r6On ? 'text-rose-500' : 'text-slate-400'}`} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-foreground">Drain Valve</h3>
+            <p className="text-muted-foreground mt-1">Relay 6 Status</p>
+          </div>
+          <Button size="lg" variant={r6On ? 'primary' : 'outline'} className={`w-full ${r6On ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500' : ''}`}
+            onClick={() => sendCommand('relay6', !r6On)} disabled={loadingRelay === 'relay6' || loadingRelay === 'emergency'}>
+            {loadingRelay === 'relay6' ? 'Processing...' : r6On ? 'Turn OFF' : 'Turn ON'}
           </Button>
         </GlassCard>
 
         {/* Emergency Stop */}
-        <GlassCard className="p-6 flex flex-col items-center justify-center text-center space-y-6 lg:col-span-2 border-red-500/20 bg-red-500/5">
-          <div className="p-4 bg-red-100 dark:bg-red-900/30 rounded-full">
+        <GlassCard className="p-6 flex flex-col items-center justify-center text-center space-y-6 lg:col-span-3 border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.2)] bg-red-500/10">
+          <div className="p-4 bg-red-100 dark:bg-red-900/50 rounded-full">
             <Power className="w-12 h-12 text-red-500 animate-pulse" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-foreground">Emergency Stop</h3>
+            <h3 className="text-xl font-bold text-red-500">Emergency Stop</h3>
             <p className="text-muted-foreground mt-1">Immediately halt all pumps and close all valves</p>
           </div>
           <Button 
             size="lg" 
             variant="destructive"
-            className="w-full text-lg py-6"
+            className="w-full text-lg py-6 bg-red-600 hover:bg-red-700 font-bold"
             onClick={handleEmergencyStop}
             disabled={loadingRelay === 'emergency'}
           >

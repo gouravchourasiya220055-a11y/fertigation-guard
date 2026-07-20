@@ -59,13 +59,22 @@ inline bool sendPacket(String payload)
 inline String receivePacket()
 {
     int packetSize = LoRa.parsePacket();
-    if (packetSize == 0) return "";
+    if (packetSize <= 2) return ""; // Ignore empty or tiny noise packets
     
     String payload = "";
+    payload.reserve(packetSize + 1);
+    
     while (LoRa.available())
     {
-        payload += (char)LoRa.read();
+        char c = (char)LoRa.read();
+        payload += c;
     }
+    
+    // Basic structural check (must start and end with JSON braces)
+    if (!payload.startsWith("{") || !payload.endsWith("}")) {
+        return ""; // Corrupted or non-JSON packet
+    }
+    
     return payload;
 }
 

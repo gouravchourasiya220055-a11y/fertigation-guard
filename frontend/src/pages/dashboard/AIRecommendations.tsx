@@ -62,6 +62,30 @@ export default function AIRecommendations() {
 
         {/* Actionable Insights */}
         <div className="lg:col-span-2 space-y-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <GlassCard className="p-4 bg-emerald-500/5 border-emerald-500/20">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-1">Recommended Target EC</h4>
+              <p className="text-2xl font-bold text-foreground">1.8 - 2.2 mS/cm</p>
+              <p className="text-xs text-emerald-500 mt-1">Optimal for current vegetative stage</p>
+            </GlassCard>
+            <GlassCard className="p-4 bg-blue-500/5 border-blue-500/20">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-1">Recommended Target pH</h4>
+              <p className="text-2xl font-bold text-foreground">6.0 - 6.5</p>
+              <p className="text-xs text-blue-500 mt-1">Ensures maximum nutrient uptake</p>
+            </GlassCard>
+            <GlassCard className="p-4 bg-amber-500/5 border-amber-500/20">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-1">NPK Recommendation</h4>
+              <p className="text-2xl font-bold text-foreground">20-20-20 Mix</p>
+              <p className="text-xs text-amber-500 mt-1">Adjusting based on recent leaf yellowing</p>
+            </GlassCard>
+            <GlassCard className="p-4 bg-purple-500/5 border-purple-500/20">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-1">Weather Impact</h4>
+              <p className="text-2xl font-bold text-foreground">High Evaporation</p>
+              <p className="text-xs text-purple-500 mt-1">Increasing water volume by +15% today</p>
+            </GlassCard>
+          </div>
+
           <GlassCard className="p-6">
             <div className="flex gap-4">
               <div className="p-3 bg-blue-500/10 rounded-xl h-fit">

@@ -13,7 +13,7 @@ const initializeSocket = (httpServer) => {
   });
 
   io.on('connection', (socket) => {
-    logger.info(`New client connected: ${socket.id}`);
+    logger.info(`Socket connected: ${socket.id}`);
 
     // Devices and clients can join a specific room (e.g., Farm ID or Device ID)
     socket.on('join_room', (room) => {
@@ -22,7 +22,7 @@ const initializeSocket = (httpServer) => {
     });
 
     socket.on('disconnect', () => {
-      logger.info(`Client disconnected: ${socket.id}`);
+      logger.info(`Socket disconnected: ${socket.id}`);
     });
   });
 

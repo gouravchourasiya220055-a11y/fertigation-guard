@@ -20,7 +20,7 @@
 #define MAX_RETRIES 3
 #define RETRY_INTERVAL_MS 500
 #define DUPLICATE_IGNORE_WINDOW_MS 2000
-#define FETCH_INTERVAL_MS 3000 // Poll API every 3 seconds
+#define FETCH_INTERVAL_MS 5000 // Poll API every 5 seconds
 
 // ------------------------------------------------
 // Structures
@@ -55,7 +55,7 @@ inline void pushCommand(const String& target, const String& cmd) {
         commandQueue[cmdQueueHead].active = false;
         cmdQueueHead = (cmdQueueHead + 1) % MAX_QUEUE_SIZE;
         cmdQueueSize--;
-        if (DEBUG_MODE) Serial.println("Warning: Command queue full. Discarding oldest.");
+        logWarning("Command", "Queue full. Discarding oldest.");
     }
     
     commandQueue[cmdQueueTail].target = target;
@@ -104,13 +104,8 @@ inline void setupCommandManager() {
  */
 inline void printCommand(const GatewayCommand* cmd, const String& status) {
     if (DEBUG_MODE && cmd != nullptr) {
-        Serial.println("\n===== COMMAND =====");
-        Serial.println(status);
-        Serial.print("Target Node : "); Serial.println(cmd->target);
-        Serial.print("Command     : "); Serial.println(cmd->command);
-        Serial.print("Retry Count : "); Serial.println(cmd->retryCount);
-        Serial.print("Queue Size  : "); Serial.println(cmdQueueSize);
-        Serial.println("===================\n");
+        String msg = status + " -> " + cmd->target + " : " + cmd->command;
+        logInfo("Command", msg.c_str());
     }
 }
 
@@ -124,15 +119,12 @@ inline void parseCommand(const String& jsonPayload) {
     DeserializationError error = deserializeJson(doc, jsonPayload);
     
     if (error) {
-        if (DEBUG_MODE) {
-            Serial.print("Warning: API returned invalid JSON. Error: ");
-            Serial.println(error.c_str());
-        }
+        logWarning("Command", "API returned invalid JSON");
         return;
     }
     
     if (!doc.containsKey("target") || !doc.containsKey("command")) {
-        if (DEBUG_MODE) Serial.println("Warning: JSON missing target or command keys.");
+        logWarning("Command", "JSON missing keys");
         return;
     }
     
@@ -143,7 +135,6 @@ inline void parseCommand(const String& jsonPayload) {
     String cmdSignature = target + ":" + cmd;
     unsigned long now = millis();
     if (cmdSignature == lastCommandString && (now - lastCommandTime < DUPLICATE_IGNORE_WINDOW_MS)) {
-        if (DEBUG_MODE) Serial.println("Info: Duplicate command ignored.");
         return;
     }
     
@@ -152,14 +143,8 @@ inline void parseCommand(const String& jsonPayload) {
     
     pushCommand(target, cmd);
     
-    if (DEBUG_MODE) {
-        Serial.println("\n===== COMMAND =====");
-        Serial.println("Received from API & Queued");
-        Serial.print("Target Node : "); Serial.println(target);
-        Serial.print("Command     : "); Serial.println(cmd);
-        Serial.print("Queue Size  : "); Serial.println(cmdQueueSize);
-        Serial.println("===================\n");
-    }
+    String msg = "Queued: " + cmd + " for " + target;
+    logInfo("Command", msg.c_str());
 }
 
 /**

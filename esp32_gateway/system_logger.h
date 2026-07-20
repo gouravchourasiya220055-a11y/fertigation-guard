@@ -6,6 +6,7 @@
 #define SYSTEM_LOGGER_H
 
 #include <Arduino.h>
+#include "config.h"
 
 #define MAX_LOG_ENTRIES 200
 
@@ -33,6 +34,14 @@ inline void addLog(const char* module, LogSeverity severity, const char* message
     snprintf(logBuffer[logHead].module, sizeof(logBuffer[logHead].module), "%s", module);
     logBuffer[logHead].severity = severity;
     snprintf(logBuffer[logHead].message, sizeof(logBuffer[logHead].message), "%s", message);
+    
+    // Live professional logging as requested by user
+    if (DEBUG_MODE) {
+        Serial.print("[");
+        Serial.print(module);
+        Serial.print("]\n");
+        Serial.println(message);
+    }
     
     logHead = (logHead + 1) % MAX_LOG_ENTRIES;
     if (logCount < MAX_LOG_ENTRIES) logCount++;

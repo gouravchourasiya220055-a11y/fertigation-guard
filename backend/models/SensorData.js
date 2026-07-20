@@ -37,4 +37,6 @@ const SensorDataSchema = new mongoose.Schema(
   }
 );
 
+SensorDataSchema.index({ farm: 1, timestamp: -1 }); // Optimized for historical charts
+
 export default mongoose.model('SensorData', SensorDataSchema);

@@ -59,10 +59,10 @@ inline void processOfflineQueue();
 inline void checkNetworkRecovery() {
     bool currentStatus = (WiFi.status() == WL_CONNECTED);
     if (currentStatus && !isNetworkOnline) {
-        if (DEBUG_MODE) Serial.println("Network Recovered! Resuming synchronization.");
+        logInfo("Network", "Recovered! Resuming synchronization.");
         isNetworkOnline = true;
     } else if (!currentStatus && isNetworkOnline) {
-        if (DEBUG_MODE) Serial.println("Network Lost! Buffering offline.");
+        logWarning("Network", "Lost! Buffering offline.");
         isNetworkOnline = false;
     }
 }
@@ -78,12 +78,9 @@ inline void syncClock() {
         struct tm timeinfo;
         if (getLocalTime(&timeinfo, 5000)) { // 5s timeout
             lastNtpSyncMs = now;
-            if (DEBUG_MODE) {
-                Serial.println("Time Synchronized via NTP:");
-                Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-            }
+            logInfo("Clock", "Time Synchronized via NTP");
         } else {
-            if (DEBUG_MODE) Serial.println("Failed to synchronize time.");
+            logWarning("Clock", "Failed to synchronize time");
         }
     }
 }
@@ -97,10 +94,10 @@ inline void sendHeartbeat() {
         
         String url = String(API_BASE_URL) + "/api/heartbeat";
         String payload = "{";
-        payload += "\"id\":\"ESP32_GATEWAY\",";
-        payload += "\"fw_version\":\"1.0.0\",";
-        payload += "\"wifi_rssi\":" + String(WiFi.RSSI()) + ",";
-        payload += "\"free_heap\":" + String(ESP.getFreeHeap()) + ",";
+        payload += "\"gatewayId\":\"" + String(DEVICE_ID) + "\",";
+        payload += "\"fwVersion\":\"1.0.0\",";
+        payload += "\"wifiRssi\":" + String(WiFi.RSSI()) + ",";
+        payload += "\"freeHeap\":" + String(ESP.getFreeHeap()) + ",";
         payload += "\"uptime\":" + String(millis());
         payload += "}";
 
@@ -109,11 +106,10 @@ inline void sendHeartbeat() {
         http.addHeader("Content-Type", "application/json");
         int httpCode = http.POST(payload);
         
-        if (DEBUG_MODE) {
-            Serial.println("\n========== CLOUD ==========");
-            Serial.println("Heartbeat Sent");
-            Serial.print("HTTP Code: "); Serial.println(httpCode);
-            Serial.println("===========================\n");
+        if (httpCode > 0) {
+            logInfo("Heartbeat", "Sent Successfully");
+        } else {
+            logWarning("Heartbeat", "Failed to send");
         }
         
         http.end();
@@ -125,7 +121,7 @@ inline void sendHeartbeat() {
 // ------------------------------------------------
 inline void queueTelemetry(const String& payload) {
     if (offlineQueueSize == MAX_OFFLINE_QUEUE) {
-        if (DEBUG_MODE) Serial.println("Offline buffer full. Discarding oldest packet.");
+        logWarning("Queue", "Buffer full. Discarding oldest.");
         offlineQueue[offlineQueueHead].active = false;
         offlineQueueHead = (offlineQueueHead + 1) % MAX_OFFLINE_QUEUE;
         offlineQueueSize--;
@@ -139,6 +135,8 @@ inline void queueTelemetry(const String& payload) {
     
     offlineQueueTail = (offlineQueueTail + 1) % MAX_OFFLINE_QUEUE;
     offlineQueueSize++;
+    
+    logInfo("Queue", "Stored");
 }
 
 inline bool attemptUpload(const String& payload) {
@@ -156,19 +154,15 @@ inline bool attemptUpload(const String& payload) {
     if (httpCode >= 200 && httpCode < 300) {
         return true;
     } else {
-        if (DEBUG_MODE) {
-            Serial.print("Upload failed. HTTP Code: "); 
-            Serial.println(httpCode);
-        }
         return false;
     }
 }
 
 inline void uploadTelemetry(const String& payload) {
     if (attemptUpload(payload)) {
-        if (DEBUG_MODE) Serial.println("Telemetry Upload Success.");
+        logInfo("API", "Upload Success");
     } else {
-        if (DEBUG_MODE) Serial.println("Telemetry Upload Failed. Queuing offline.");
+        logError("API", "Upload Failed\nRetry");
         queueTelemetry(payload);
     }
 }
@@ -192,17 +186,19 @@ inline void processOfflineQueue() {
             packet->active = false;
             offlineQueueHead = (offlineQueueHead + 1) % MAX_OFFLINE_QUEUE;
             offlineQueueSize--;
-            if (DEBUG_MODE) Serial.println("Queued Telemetry Uploaded.");
+            logInfo("Queue", "Uploaded");
         } else {
             // Failed, increment retries
             packet->retryCount++;
             packet->lastAttemptMs = now;
             
             if (packet->retryCount >= MAX_UPLOAD_RETRIES) {
-                if (DEBUG_MODE) Serial.println("Max retries reached. Discarding queued telemetry.");
+                logWarning("Queue", "Max retries reached. Discarding.");
                 packet->active = false;
                 offlineQueueHead = (offlineQueueHead + 1) % MAX_OFFLINE_QUEUE;
                 offlineQueueSize--;
+            } else {
+                logError("API", "Upload Failed\nRetry");
             }
         }
     }

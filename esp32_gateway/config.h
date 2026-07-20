@@ -29,8 +29,7 @@
 
 // ----------------------------------------
 // Backend Configuration (Gateway only)
-// ----------------------------------------
-#define API_BASE_URL "http://10.109.2.187:5000/api" // REST API Endpoint
+#define API_BASE_URL "https://fertigation-backend-gourav.onrender.com" // REST API Endpoint
 
 // ----------------------------------------
 // Timing Configuration

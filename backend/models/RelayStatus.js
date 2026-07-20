@@ -7,6 +7,10 @@ const RelayStatusSchema = new mongoose.Schema(
       ref: 'Farm',
       required: false, // Optional if we just want a global state for ESP32 mapping
     },
+    deviceId: {
+      type: String,
+      required: false,
+    },
     waterPump: { type: Boolean, default: false },
     peristalticPump: { type: Boolean, default: false },
     highPressurePump: { type: Boolean, default: false },

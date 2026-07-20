@@ -9,7 +9,7 @@
 #include <Arduino.h>
 #include "config.h"
 #include "lora_node.h"
-#include "irrigation_controller.h"
+#include "fertigation.h"
 #include "relays.h"
 #include "config_manager.h"
 #include "ota_manager.h"
@@ -55,10 +55,10 @@ inline void printCommand(const String& rawPacket, const String& nodeID, const St
         Serial.print("Relay State      : ");
         Serial.print("W:"); Serial.print(rState.isWaterPumpOn);
         Serial.print(" F:"); Serial.print(rState.isFertilizerPumpOn);
-        Serial.print(" H:"); Serial.print(rState.isHighPressurePumpOn);
+        Serial.print(" M:"); Serial.print(rState.isMainPumpOn);
         Serial.print(" S:"); Serial.print(rState.isStirrerOn);
-        Serial.print(" V:"); Serial.print(rState.isFlushValveOn);
-        Serial.print(" A:"); Serial.println(rState.isAlarmOn);
+        Serial.print(" B:"); Serial.print(rState.isBasePumpOn);
+        Serial.print(" D:"); Serial.println(rState.isDrainValveOpen);
         Serial.println("============================\n");
     }
 }
@@ -73,27 +73,21 @@ inline void executeCommand(const String& rawPacket, const String& nodeID, const 
     else if (cmd == "STOP_AUTO") stopAutomaticCycle();
     else if (cmd == "START_MANUAL") startManualCycle();
     else if (cmd == "STOP_MANUAL") stopManualCycle();
-    else if (cmd == "PUMP_ON") setWaterPump(true);
-    else if (cmd == "PUMP_OFF") setWaterPump(false);
-    else if (cmd == "FERT_ON") setFertilizerPump(true);
-    else if (cmd == "FERT_OFF") setFertilizerPump(false);
-    else if (cmd == "HIGH_PRESSURE_ON") setHighPressurePump(true);
-    else if (cmd == "HIGH_PRESSURE_OFF") setHighPressurePump(false);
-    else if (cmd == "STIRRER_ON") setStirrer(true);
-    else if (cmd == "STIRRER_OFF") setStirrer(false);
-    else if (cmd == "FLUSH_ON") setFlushValve(true);
-    else if (cmd == "FLUSH_OFF") setFlushValve(false);
-    else if (cmd == "ALARM_ON") setAlarm(true);
-    else if (cmd == "ALARM_OFF") setAlarm(false);
+    else if (cmd == "PUMP_ON") startWaterPump();
+    else if (cmd == "PUMP_OFF") stopWaterPump();
+    else if (cmd == "FERT_ON") startFertilizerPump();
+    else if (cmd == "FERT_OFF") stopFertilizerPump();
+    else if (cmd == "HIGH_PRESSURE_ON" || cmd == "MAIN_ON") startMainPump();
+    else if (cmd == "HIGH_PRESSURE_OFF" || cmd == "MAIN_OFF") stopMainPump();
+    else if (cmd == "STIRRER_ON") startStirrer();
+    else if (cmd == "STIRRER_OFF") stopStirrer();
+    else if (cmd == "FLUSH_ON" || cmd == "DRAIN_ON") openDrainValve();
+    else if (cmd == "FLUSH_OFF" || cmd == "DRAIN_OFF") closeDrainValve();
+    else if (cmd == "BASE_ON") startBasePump();
+    else if (cmd == "BASE_OFF") stopBasePump();
     else if (cmd == "EMERGENCY_STOP") emergencyStop();
     else if (cmd == "RESET") {
-        // Reset emergency mode and restore IDLE safely
-        extern RelayState relayStatus; 
-        relayStatus.emergencyMode = false;
-        setAlarm(false);
-        stopAllRelays();
-        extern ControllerState currentState;
-        currentState = IDLE;
+        resetController();
         result = "Emergency Reset";
     }
     // Parameters
@@ -127,7 +121,6 @@ inline void executeCommand(const String& rawPacket, const String& nodeID, const 
             result = "Invalid Soil Parameter";
         }
     }
-    // Future AI hooks gracefully pass through or reject
     else {
         result = "UNKNOWN COMMAND";
     }

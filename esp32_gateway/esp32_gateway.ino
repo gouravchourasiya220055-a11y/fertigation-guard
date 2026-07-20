@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <LoRa.h>
+#include <ArduinoJson.h>
 #include "config.h"
 #include "lora_gateway.h"
 #include "api_client.h"
@@ -100,22 +101,23 @@ void loop() {
   String packet = receiveLoRaPacket();
 
   if (packet.length() > 0) {
-    if (DEBUG_MODE) {
-      Serial.println("--------------------------------");
-      Serial.print("Received: ");
-      Serial.println(packet);
-      Serial.print("Length: ");
-      Serial.println(packet.length());
-      Serial.print("RSSI: ");
-      Serial.println(LoRa.packetRssi());
-      Serial.print("SNR: ");
-      Serial.println(LoRa.packetSnr());
-      Serial.println("--------------------------------");
-    }
+    StaticJsonDocument<512> doc;
+    DeserializationError error = deserializeJson(doc, packet);
     
-    // Route telemetry packets to the Cloud Sync Manager
-    if (packet.startsWith("{")) {
+    if (!error) {
+        String deviceId = doc["id"] | "UNKNOWN";
+        
+        String logMsg = "Packet Received\nNode: " + deviceId + 
+                        " | RSSI: " + String(LoRa.packetRssi()) + 
+                        " | SNR: " + String(LoRa.packetSnr()) +
+                        " | Size: " + String(packet.length()) + 
+                        " | TS: " + String(millis());
+        logInfo("LoRa", logMsg.c_str());
+        
+        // Route telemetry packets to the Cloud Sync Manager
         uploadTelemetry(packet);
+    } else {
+        logWarning("LoRa", "Ignored Invalid JSON Packet");
     }
   }
 

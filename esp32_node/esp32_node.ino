@@ -5,13 +5,14 @@
 #include <Arduino.h>
 #include "config.h"
 #include "lora_node.h"
-#include "irrigation_controller.h"
+#include "fertigation.h"
 #include "telemetry_manager.h"
 #include "command_processor.h"
 #include "config_manager.h"
 #include "health_manager.h"
 #include "ota_manager.h"
 #include "production_manager.h"
+#include "system_logger.h" // Might be needed for setupLogger()
 
 void setup() {
   Serial.begin(115200);

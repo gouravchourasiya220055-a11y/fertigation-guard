@@ -1,0 +1,33 @@
+services:
+  # Backend Node.js API
+  - type: web
+    name: fertigation-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+    rootDir: backend
+
+  # Frontend React SPA
+  - type: web
+    name: fertigation-dashboard
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: fertigation-backend
+          envVarKey: RENDER_EXTERNAL_URL
+    rootDir: frontend
