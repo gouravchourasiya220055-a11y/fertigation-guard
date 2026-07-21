@@ -1,3 +1,7 @@
+import dns from 'dns';
+// Force Node.js to use IPv4 DNS resolution first (Fixes MongoDB ECONNREFUSED error)
+dns.setDefaultResultOrder('ipv4first');
+
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -21,6 +25,7 @@ import deviceRoutes from './routes/device.routes.js';
 import relayRoutes from './routes/relay.routes.js';
 import telemetryRoutes from './routes/telemetry.routes.js';
 import commandRoutes from './routes/command.routes.js';
+import flowRoutes from './routes/flow.routes.js';
 
 dotenv.config();
 
@@ -52,10 +57,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Demo Mode Mock Data Removed
-
-import flowRoutes from './routes/flow.routes.js';
-
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/farms', farmRoutes);
 app.use('/api/device', deviceRoutes);

@@ -1,46 +1,103 @@
-import SystemLog from '../models/SystemLog.js';
+// backend/controllers/command.controller.js
 
-// In-memory queue for commands (Can be moved to Redis or MongoDB later)
-export const commandQueue = [];
+let commandQueue = [];
 
-export const queueCommand = async (req, res, next) => {
-  try {
-    const { target, command } = req.body;
-    
-    if (!target || !command) {
-      return res.status(400).json({ success: false, message: 'Missing target or command' });
-    }
-
-    commandQueue.push({ target, command, timestamp: Date.now() });
-
-    await SystemLog.create({
-      type: 'info',
-      source: 'backend',
-      message: `Command queued for ${target}: ${command}`
-    });
-
-    res.status(200).json({ success: true, message: 'Command queued successfully' });
-  } catch (error) {
-    next(error);
+/**
+ * @desc Map Relay ID + Status to exact ESP32 C++ Header Command String
+ */
+const mapRelayToEspCommand = (relayNum, status) => {
+  const r = Number(relayNum);
+  switch (r) {
+    case 1:
+      return status ? "PUMP_ON" : "PUMP_OFF";
+    case 2:
+      return status ? "FERT_ON" : "FERT_OFF";
+    case 3:
+      return status ? "HIGH_PRESSURE_ON" : "HIGH_PRESSURE_OFF";
+    case 4:
+      return status ? "STIRRER_ON" : "STIRRER_OFF";
+    case 5:
+      return status ? "FLUSH_ON" : "FLUSH_OFF";
+    case 6:
+      return status ? "BASE_ON" : "BASE_OFF";
+    default:
+      return status ? "PUMP_ON" : "PUMP_OFF";
   }
 };
 
-export const fetchNextCommand = async (req, res, next) => {
+/**
+ * @desc Queue Command for ESP32 Polling / Socket Emit
+ */
+export const queueCommand = async (req, res) => {
   try {
-    // If the queue is empty, return 204 No Content
-    if (commandQueue.length === 0) {
-      return res.status(204).send();
+    const deviceId = req.body.deviceId || "ESP32_FERTIGATION_01";
+    const relay = req.body.relay || req.body.relayNum || req.body.relayId || 1;
+    const status = req.body.status !== undefined ? Boolean(req.body.status) : true;
+
+    // Convert Relay 1-6 to string commands like "PUMP_ON", "FERT_ON" etc.
+    const espCommand = req.body.commandName || mapRelayToEspCommand(relay, status);
+
+    // Formatted exact string required by ESP32 command_processor.h
+    const rawLoRaCommand = `CMD:${deviceId}:${espCommand}`;
+
+    const commandPayload = {
+      id: Date.now().toString(),
+      deviceId,
+      relay: Number(relay),
+      status,
+      command: espCommand,          // e.g., "PUMP_ON"
+      rawPacket: rawLoRaCommand,     // e.g., "CMD:ESP32_FERTIGATION_01:PUMP_ON"
+      timestamp: new Date().toISOString(),
+    };
+
+    // Add to HTTP Polling Queue
+    commandQueue.push(commandPayload);
+
+    // Emit via Socket.io
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("relay_control", commandPayload);
+      io.emit("command", commandPayload);
+      io.emit("lora_cmd", rawLoRaCommand);
     }
 
-    // Pop the oldest command
-    const nextCommand = commandQueue.shift();
+    console.log("Queued Command for ESP32 Processor:", commandPayload);
 
-    // The ESP32 expects exactly this JSON structure
-    res.status(200).json({
-      target: nextCommand.target,
-      command: nextCommand.command
+    return res.status(200).json({
+      success: true,
+      message: `Command queued: ${espCommand}`,
+      command: commandPayload,
     });
   } catch (error) {
-    next(error);
+    console.error("Error in queueCommand:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * @desc ESP32 fetches pending commands
+ */
+export const fetchNextCommand = async (req, res) => {
+  try {
+    if (commandQueue.length === 0) {
+      return res.status(200).json({
+        success: true,
+        hasCommand: false,
+        command: null,
+      });
+    }
+
+    const nextCommand = commandQueue.shift();
+
+    return res.status(200).json({
+      success: true,
+      hasCommand: true,
+      command: nextCommand,
+      // ESP32 Direct Raw String Format
+      rawPacket: nextCommand.rawPacket,
+    });
+  } catch (error) {
+    console.error("Error fetching next command:", error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
