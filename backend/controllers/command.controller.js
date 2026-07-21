@@ -1,6 +1,5 @@
 // backend/controllers/command.controller.js
-
-let commandQueue = [];
+export let commandQueue = []; 
 
 /**
  * @desc Map Relay ID + Status to exact ESP32 C++ Header Command String
